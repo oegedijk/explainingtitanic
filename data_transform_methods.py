@@ -18,27 +18,27 @@ def show_cardinality_of_cats(df):
     for col in df.select_dtypes(include='object').columns:
         cardinality_df = cardinality_df.append(
                 {
-                    'Column': col, 
+                    'Column': col,
                     'Cardinality': df[col].nunique()
-                }, 
+                },
                 ignore_index=True)
-    
+
     cardinality_df = cardinality_df.sort_values('Cardinality', ascending=False)\
-                                   .reset_index(drop=True)        
+                                   .reset_index(drop=True)
     return cardinality_df
 
 
-def clean_data(df, drop_columns=[], substring_drop_list=[], 
+def clean_data(df, drop_columns=[], substring_drop_list=[],
                 drop_dates=True, verbose=1):
     """
     drops columns from dataframe df.
-    
+
     drop_columns: all columns in drop_columns will be dropped
-    substring_drop_list: all columns that have a substring matching the strings 
+    substring_drop_list: all columns that have a substring matching the strings
     in substring_drop_list will be dropped
     drop_dates: if True, trom all "datetime" column types
-    """ 
-    
+    """
+
     if drop_dates:
         date_columns = df.select_dtypes(include="datetime").columns.tolist()
     else:
@@ -49,7 +49,7 @@ def clean_data(df, drop_columns=[], substring_drop_list=[],
         substring_drop_columns = substring_drop_columns + \
             [col for col in df.columns if substring in col]
 
-    for col in drop_columns + date_columns + substring_drop_columns: 
+    for col in drop_columns + date_columns + substring_drop_columns:
         if col in df.columns:
             if verbose:
                 print(f'dropping {col}')
@@ -68,15 +68,15 @@ def get_transformed_X_y(raw_data_df, transformer, target, add_random=False):
     returns a transformed DataFrame.
     if add_random = True, then a random column is added. (this can be useful
     to compare feature importances against)
-    """ 
+    """
     df =  transformer.transform(raw_data_df.copy())
-    
-    X = df.drop([target], axis=1) 
+
+    X = df.drop([target], axis=1)
     X.columns = [col.replace('<', '') for col in X.columns]
     y = df[target]
-    
+
     if add_random:
-        X['RANDOM_COLUMN'] = np.random.rand(len(X))   
+        X['RANDOM_COLUMN'] = np.random.rand(len(X))
     return X, y
 
 
@@ -343,23 +343,23 @@ class IsolationForestTransform(TransformerMixin):
         if self.verbose:
             print('Transform: IsolationForestTransform for: {}...'.format(self.name))
         assert self.fitted
-        
+
         return self.isofor.decision_function(
                         X.replace([np.inf, -np.inf]).fillna(-999))
-    
 
-def fit_transformer(X, target=None, topx=None, isofors = {}, 
+
+def fit_transformer(X, target=None, topx=None, isofors = {},
                         numfill='ExtremeValue', stdscale=False, verbose=1):
     """
     Returns fitted transformer object.
     Fills all numerical columns except target with extreme value (-999).
-    
+
     One hot encodes all categorical columns.
     """
     num_columns = list(set(X.select_dtypes(include=np.number).columns)
                             - set([target]))
 
-    obj_columns = X.select_dtypes(include=['object']).columns
+    obj_columns = X.select_dtypes(include=['object']).columns.tolist()
 
     mappers = []
 
@@ -407,7 +407,7 @@ def fit_transformer(X, target=None, topx=None, isofors = {},
                       'verbose':verbose}],
             input_df = True
         )
-        
+
     for isofor_name, isofor_cols in isofors.items():
          mappers = mappers + gen_features(
             columns=[isofor_cols],
@@ -417,92 +417,19 @@ def fit_transformer(X, target=None, topx=None, isofors = {},
             alias = isofor_name,
             input_df = True
         )
-        
+
 
     if verbose:
         print("Columns being transformed: ")
         print("numeric columns: ", num_columns)
         print("categorical columns: ", obj_columns)
-    
-    print(mappers)
+
     mapper = DataFrameMapper(mappers, df_out=True)
 
     if verbose: print("fitting transformer...")
     X = X.copy()
     if target is not None:
         mapper.fit(X, X[target])
-    else: 
-        mapper.fit(X)
-    return mapper
-
-
-def fit_rf_transformer(X, target=None, topx=None, isofors = {}, verbose=1):
-    """
-    Returns fitted transformer object.
-    Fills all numerical columns except target with extreme value (-999).
-    
-    One hot encodes all categorical columns.
-    """
-    num_columns = list(set(X.select_dtypes(include=np.number).columns)
-                            - set([target]))
-
-    obj_columns = X.select_dtypes(include=['object']).columns
-
-    mappers = []
-
-    # dummy transform to make sure target stays in the transformed dataframe:
-    if target is not None:
-        mappers = mappers + gen_features(
-            columns=[target],
-            classes = [{'class' : DummyTransform,
-                        'name': target,
-                        'verbose':verbose}],
-            input_df = True
-            )
-
-    # Fill missing values in numerical columns:
-    for num_col in num_columns:
-        mappers = mappers + gen_features(
-            columns=[num_col],
-            classes = [{'class' : ExtremeValueFill,
-                        'name': num_col,
-                        'verbose':verbose}],
-            input_df = True
-        )
-
-    for onehot_col in obj_columns:
-        mappers = mappers + gen_features(
-            columns=[onehot_col],
-            classes=[{'class' : OneHot,
-                      'name': onehot_col,
-                      'topx': topx,
-                      'verbose':verbose}],
-            input_df = True
-        )
-        
-    for isofor_name, isofor_cols in isofors.items():
-         mappers = mappers + gen_features(
-            columns=[isofor_cols],
-            classes = [{'class' : IsolationForestTransform,
-                        'name': isofor_name,
-                        'verbose': verbose}],
-            alias = isofor_name,
-            input_df = True
-        )
-        
-
-    if verbose:
-        print("Columns being transformed: ")
-        print("numeric columns: ", num_columns)
-        print("categorical columns: ", obj_columns)
-    
-    print(mappers)
-    mapper = DataFrameMapper(mappers, df_out=True)
-
-    if verbose: print("fitting transformer...")
-    X = X.copy()
-    if target is not None:
-        mapper.fit(X, X[target])
-    else: 
+    else:
         mapper.fit(X)
     return mapper

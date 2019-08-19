@@ -39,13 +39,12 @@ def plotly_contribution_plot(contrib_df, target="target",
         )
     )
     if 'raw_value' in contrib_df.columns:
-        hover_text=["{}{}, \n {}={} ".format('+' if contrib>0 else '', np.round(100*contrib,2), col, value) 
+        hover_text=[f"{col}={value}<BR>{'+' if contrib>0 else ''}{np.round(100*contrib,2)}" 
                   for col, value, contrib in zip(
                       contrib_df.col, contrib_df.raw_value, contrib_df.contribution)]
     else:
-        hover_text=["{}{}, \n {} ".format('+' if contrib>0 else '', contrib, col) 
-                  for col, contrib in zip(
-                      contrib_df.col, contrib_df.contribution)]
+        hover_text=[f"{col}=?<BR>{'+' if contrib>0 else ''}{np.round(100*contrib,2)}"  
+                  for col, contrib in zip(contrib_df.col, contrib_df.contribution)]
 
     fill_colour_up='rgba(55, 128, 191, 0.7)' if higher_is_better else 'rgba(219, 64, 82, 0.7)'
     fill_colour_down='rgba(219, 64, 82, 0.7)' if higher_is_better else 'rgba(55, 128, 191, 0.7)'
@@ -238,12 +237,9 @@ def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None, hig
     return fig
 
 
-
-
 def plotly_pdp(pdp_result, 
                display_index=None, index_feature_value=None, index_prediction=None,
                absolute=True, plot_lines=True, frac_to_plot=100):
-
 
     trace0 = go.Scatter(
             x = pdp_result.feature_grids,
@@ -253,7 +249,7 @@ def plotly_pdp(pdp_result,
             name = f'average prediction <br>for different values of <br>{pdp_result.feature}'
         )
     data = [trace0]
-    
+
     if display_index is not None:
         # pdp_result.ice_lines.index = X.index
         trace1 = go.Scatter(
@@ -265,7 +261,7 @@ def plotly_pdp(pdp_result,
             name = f'prediction for index {display_index} <br>for different values of <br>{pdp_result.feature}'
         )
         data.append(trace1)
-        
+
     if plot_lines:
         x = pdp_result.feature_grids
         ice_lines = pdp_result.ice_lines.sample(frac_to_plot)
@@ -286,13 +282,16 @@ def plotly_pdp(pdp_result,
             )
 
     layout = go.Layout(title = f'pdp plot for {pdp_result.feature}')
-    
+
     fig = go.Figure(data=data, layout=layout)
-    
+
     shapes = []
     annotations = []
-    
+
     if index_feature_value is not None:
+        if not isinstance(index_feature_value, str):
+            index_feature_value = np.round(index_feature_value, 2)
+
         shapes.append(
                     dict(
                         type='line',
@@ -314,7 +313,7 @@ def plotly_pdp(pdp_result,
             go.layout.Annotation(x=index_feature_value, 
                                  y=np.min(ice_lines) if plot_lines else \
                                     np.min(pdp_result.pdp),
-                                 text=f"baseline value = {np.round(index_feature_value,2)}"))
+                                 text=f"baseline value = {index_feature_value}"))
 
     if index_prediction is not None:
         shapes.append(
@@ -337,7 +336,7 @@ def plotly_pdp(pdp_result,
                                                 round(0.5*len(pdp_result.feature_grids))], 
                                              y=index_prediction, 
                                              text=f"baseline pred = {np.round(index_prediction,2)}"))
-        
+
     fig.update_layout(annotations=annotations)
     fig.update_layout(shapes=shapes)
     return fig
@@ -446,8 +445,8 @@ def plotly_confusion_matrix(y_true, pred_probas, cutoff=0.5, labels = None, norm
         
     data=[go.Heatmap(
                         z=cm,
-                        x=[f'predicted {lab}' for lab in labels],
-                        y=[f'actual {lab}' for lab in labels],
+                        x=[f'predicted {lab}' if len(lab) < 5 else f'predicted<br>{lab}' for lab in labels],
+                        y=[f'actual {lab}' if len(lab) < 5 else f'actual<br>{lab}' for lab in labels],
                         hoverinfo="skip",
                         zmin=0, zmax=zmax, colorscale='Blues',
                     )]
@@ -563,8 +562,8 @@ def plotly_pr_auc_curve(true_y, pred_probas, cutoff=None):
     layout = go.Layout(title='PR AUC CURVE', 
                        width=450,
                        height=450,
-                       xaxis= dict(title='Recall', range=[0,1]),
-                       yaxis = dict(title='Precision', range=[0,1], 
+                       xaxis= dict(title='Precision', range=[0,1]),
+                       yaxis = dict(title='Recall', range=[0,1], 
                        scaleanchor='y', scaleratio=1))
     fig = go.Figure(data, layout)
     shapes = [] 

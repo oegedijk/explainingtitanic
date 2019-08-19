@@ -13,33 +13,27 @@ def get_feature_dict(all_cols, cats=None):
     feature_dict is a dictionary with all the columns belonging to 
     each onehotencoded feature:
     e.g. {'Gender' : ['Gender_Male', 'Gender_Female']}
-
     """
     
     feature_dict = {}
     
     if cats is None: 
         return {col:[col] for col in all_cols}
-    
-
 
     for col in cats:
         cat_cols = [c for c in all_cols if c.startswith(col)]
         if len(cat_cols) > 1:
             feature_dict[col] = cat_cols
 
-        
     # add all the individual features
     other_cols = list(
             # individual features = set of all columns minus the onehot columns
             set(all_cols)
              - set([item for sublist in list(feature_dict.values()) 
-                                for item in sublist])
-        )
+                                for item in sublist]))
     
     for col in other_cols:
         feature_dict[col] = [col]
-   
     return feature_dict
 
 
@@ -93,7 +87,7 @@ def permutation_importances(model, X, y, metric, cats=None,
         return imp
 
 
-def cv_permutation_importances(model, X, y, metric, greater_is_better=True, 
+def cv_permutation_importances(model, X, y, metric, cats=None, greater_is_better=True, 
                                 needs_proba=True, cv=5, verbose=0):
     """
     Returns the permutation importances averages over `cv` cross-validated folds.
@@ -106,7 +100,7 @@ def cv_permutation_importances(model, X, y, metric, greater_is_better=True,
         
         model.fit(X_train, y_train)
         
-        imp = permutation_importances(model, X_test, y_test, metric, 
+        imp = permutation_importances(model, X_test, y_test, metric, cats,
                                         greater_is_better=greater_is_better, 
                                         needs_proba=needs_proba, 
                                         sort=False, 
