@@ -115,7 +115,6 @@ def cv_permutation_importances(model, X, y, metric, cats=None, greater_is_better
                         .sort_values('Importance', ascending=False)
 
 
-
 def mean_absolute_shap_values(columns, shap_values, cats=None):
     """ 
     Returns a dataframe with the mean absolute shap values for each feature.
@@ -268,28 +267,6 @@ def get_contrib_summary_df(contrib_df):
     return contrib_summary_df.reset_index(drop=True)
 
 
-def model_summary_markdown(y_true, pred_probas, cutoff=0.5):
-    """ 
-    Returns a markdown string with summary statistics for a model.
-    """ 
-    cls_report = classification_report(y_true, np.where(pred_probas>cutoff, 1, 0), output_dict=True)
-    roc_auc = roc_auc_score(y_true, pred_probas)
-    
-    markdown = f"""
-## Summary
-Accuracy : {np.round(cls_report['accuracy'], 2)}
-         
-Precision: {np.round(cls_report['1']['precision'], 2)}
-         
-Recall: {np.round(cls_report['1']['recall'], 2)}
-         
-F1 Score: {np.round(cls_report['1']['f1-score'], 2)}
-         
-ROC AUC score: {np.round(roc_auc, 2)}
-"""
-    return markdown
-
-
 def normalize_shap_interaction_values(shap_interaction_values, shap_values=None):
     """
     Normalizes shap_interaction_values to make sure that the rows add up to 
@@ -351,6 +328,9 @@ def get_shadowtree_df(shadow_tree, observation):
                     'direction' : 'left' if observation[node.feature_name()] < node.split() else 'right',
                     'left' : node_pred_proba(node.left),
                     'right' : node_pred_proba(node.right),
+                    'diff' : node_pred_proba(node.left) - node_pred_proba(node) \
+                                if observation[node.feature_name()] < node.split() \
+                                else node_pred_proba(node.right) - node_pred_proba(node) 
                 }, ignore_index=True)
         
     else:
@@ -368,3 +348,19 @@ def get_shadowtree_df(shadow_tree, observation):
                 }, ignore_index=True)
             
     return shadowtree_df
+
+
+def shadowtree_df_summary(shadow_df):
+    base_value = np.round(100*shadow_df.iloc[[0]]['average'].item(), 2)
+    prediction = np.round(100*(shadow_df.iloc[[-1]]['average'].item() + shadow_df.iloc[[-1]]['diff'].item()), 2)
+    
+    shadow_summary_df = pd.DataFrame(columns=['value', 'condition', 'change', 'prediction'])
+    
+    for index, row in shadow_df.iterrows():
+        shadow_summary_df = shadow_summary_df.append({
+                        'value' : (str(row['feature'])+'='+str(row['value'])).ljust(50),
+                        'condition' : str('>=' if row['direction'] == 'right' else '< ') + str(row['split']).ljust(10),
+                        'change' : str('+' if row['diff'] >= 0 else '') + str(np.round(100*row['diff'], 2)) +'%',
+                        'prediction' : str(np.round(100*(row['average']+row['diff']),2)) + '%'
+                    }, ignore_index=True)
+    return base_value, prediction, shadow_summary_df

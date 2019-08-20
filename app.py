@@ -23,9 +23,10 @@ pio.templates.default = "none"
 
 print("loading DataExplainer object...")
 
-TITLE = 'Titanic Explainer'
+TITLE = 'Model Explainer'
 
-explainer = pickle.load(open(Path.cwd() / 'titanic_explainer.pkl', 'rb'))
+explainer = pickle.load(open(
+                        Path.cwd() / 'titanic_explainer.pkl', 'rb'))
 
 print('Loading Dash...')
 app = dash.Dash(__name__)
@@ -58,7 +59,7 @@ def model_tab(explainer):
                             marks={0.01: '0.01', 0.25: '0.25', 0.50: '0.50',
                                     0.75: '0.75', 0.99: '0.99'}, included=False),
             ], style={'margin': 20}),
-        ])
+        ]),
     ]),
 
     dbc.Row([
@@ -143,13 +144,13 @@ def contributions_tab(explainer):
             html.Div([
                 html.Button('random index', id='index-button'),
             ], style={'margin': 30})
-        ]),
+        ], width=4),
         dbc.Col([
              dcc.Loading(id="loading-model-prediction",
                          children=[dcc.Markdown(id='model-prediction')]),
         ]),
         dcc.Store(id='index-store'),
-    ]),
+    ], justify="between"),
 
     dbc.Row([
         dbc.Col([
@@ -163,12 +164,15 @@ def contributions_tab(explainer):
                     step = 1, value=15),
             ]),
             html.Div(id='contributions-size-display', style={'margin-top': 20})
-        ])
+        ], width=4),
+
     ]),
 
     dbc.Row([
         dbc.Col([
             html.Div([
+                html.H3('Contributions to prediction'),
+                html.Label('(click on a bar to display pdp graph)'),
                 dcc.Loading(id="loading-contributions-graph",
                          children=[dcc.Graph(id='contributions-graph')])
             ], style={'margin': 30}),
@@ -177,7 +181,8 @@ def contributions_tab(explainer):
         ], width=6),
         dbc.Col([
             html.Div([
-                html.Label("Plot \'what if?\' for columns:"),
+                html.H3('Partial Dependence Plot'),
+                html.Label("Plot partial dependence plot (\'what if?\') for column:"),
                 dcc.Dropdown(id='pdp-col',
                     options=[{'label': col, 'value':col}
                                 for col in explainer.mean_abs_shap_df(cats=True)\
@@ -190,6 +195,8 @@ def contributions_tab(explainer):
     ]),
     dbc.Row([
         dbc.Col([
+            html.H3('Contributions to prediction'),
+            html.Label('(table format)'),
             dash_table.DataTable(
                 id='contributions_table',
                 columns=[{'id': c, 'name': c}
@@ -205,18 +212,23 @@ def dependence_tab(explainer):
     return dbc.Container([
     dbc.Row([
         dbc.Col([
+            html.H3('Individual Shap Values'),
+            html.Label('(Click on a dot to display dependence graph)'),
             dcc.Graph(id='dependence-shap-scatter-graph',
                       figure=explainer.plot_shap_summary(topx=20))
         ]),
         dbc.Col([
+            html.Label('Highlight index:'),
             dbc.Input(id='dependence-highlight-index',
                         placeholder="Highlight index...",
                         debounce=True),
+            html.Label('Plot dependence for column:'),
             dcc.Dropdown(id='dependence-col',
                     options=[{'label': col, 'value':col}
                                 for col in explainer.mean_abs_shap_df()\
                                                             .Feature.tolist()],
                     value=explainer.mean_abs_shap_df().Feature[0]),
+            html.Label('Color observation by column:'),
             dcc.Dropdown(id='dependence-color-col',
                     options=[{'label': col, 'value':col}
                                 for col in explainer.columns]),
@@ -230,23 +242,31 @@ def interactions_tab(explainer):
     return dbc.Container([
     dbc.Row([
         dbc.Col([
+            html.H3('Shap Interaction Values'),
+            html.Label('Display shap interaction values for column:'),
             dcc.Dropdown(id='interaction-col',
                     options=[{'label': col, 'value':col}
                                 for col in explainer.mean_abs_shap_df()\
                                                             .Feature.tolist()],
                     value=explainer.mean_abs_shap_df().Feature[0]),
-            dcc.Graph(id='interaction-shap-scatter-graph')
-        ]),
+            html.Label('(Click on a dot to display interaction graph)'),
+            dcc.Loading(id="loading-interaction-shap-scatter",
+                         children=[dcc.Graph(id='interaction-shap-scatter-graph')])
+        ], width=6),
         dbc.Col([
+            html.Label('Highlight index:'),
             dbc.Input(id='interaction-highlight-index',
                         placeholder="Highlight index...", debounce=True),
+            html.Label('Show interaction with column:'),
             dcc.Dropdown(id='interaction-interact-col',
                     options=[{'label': col, 'value':col}
                                 for col in explainer.mean_abs_shap_df()\
                                                             .Feature.tolist()],
                     value=explainer.mean_abs_shap_df().Feature[0]),
-            dcc.Graph(id='interaction-graph')
-        ])
+            html.Label('Shap interaction values:'),
+            dcc.Loading(id="loading-interaction-graph",
+                         children=[dcc.Graph(id='interaction-graph')]),
+        ], width=6)
     ]),
     ],  fluid=True)
 
@@ -255,11 +275,19 @@ def trees_tab(explainer):
     return dbc.Container([
      dbc.Row([
         dbc.Col([
+            html.H2('Predictions of individual decision trees.'),
+            html.H4('(click on a prediction to see decision path)'),
             dcc.Graph(id='tree-predictions-graph'),
+        ], width={"size": 8, "offset": 2})
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Label('Decision path in decision tree:'),
+            dcc.Markdown(id='tree-basevalue'),
             dash_table.DataTable(
                 id='tree-predictions-table',
             ),
-        ])
+        ], width={"size": 6, "offset": 3})
     ]),
     ],  fluid=True)
 
@@ -406,7 +434,8 @@ def update_output_div(idx):
 
 
 @app.callback(
-    [Output('tree-predictions-table', 'columns'),
+    [Output('tree-basevalue', 'children'),
+     Output('tree-predictions-table', 'columns'),
      Output('tree-predictions-table', 'data'),],
     [Input('tree-predictions-graph', 'clickData'),
      Input('index-store', 'data')],
@@ -414,9 +443,11 @@ def update_output_div(idx):
 def display_click_data(clickData, idx, old_columns):
     if clickData is not None:
         model = int(clickData['points'][0]['text'][6:]) if clickData is not None else 0
-        shadowtree_df = explainer.shadowtree_df(model, idx)
+        (baseval, prediction,
+                shadowtree_df) = explainer.shadowtree_df_summary(model, idx)
         columns=[{'id': c, 'name': c} for c in  shadowtree_df.columns.tolist()]
-        return (columns, shadowtree_df.to_dict('records'))
+        baseval_str = f"Tree no {model}, Starting prediction   : {baseval}, final prediction : {prediction}"
+        return (baseval_str, columns, shadowtree_df.to_dict('records'))
     raise PreventUpdate
 
 
@@ -489,4 +520,4 @@ def update_dependence_graph(col, interact_col, idx):
 
 if __name__ == '__main__':
     print('Starting server...')
-    app.run_server(port=8061)
+    app.run_server(port=8065)

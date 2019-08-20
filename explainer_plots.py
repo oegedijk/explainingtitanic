@@ -161,11 +161,13 @@ def plotly_precision_plot(precision_df,
     fig = go.Figure(data=data, layout=layout)
     if cutoff is not None:
         fig.update_layout(annotations=[
-            go.layout.Annotation(x=cutoff, y=0.1, yref='y2',text="cutoff")])
+            go.layout.Annotation(x=cutoff, y=0.1, yref='y2',
+                                    text=f"cutoff={cutoff}")])
     return fig
 
 
-def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None, highlight_idx=None, shap_round=3):
+def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None, 
+                            highlight_idx=None, shap_round=3):
     """
     Returns a partial dependence plot based on shap values.
 
@@ -243,7 +245,8 @@ def plotly_pdp(pdp_result,
 
     trace0 = go.Scatter(
             x = pdp_result.feature_grids,
-            y = pdp_result.pdp.round(2) if absolute else (pdp_result.pdp - pdp_result.pdp[0]).round(2),
+            y = pdp_result.pdp.round(2) if absolute else (
+                    pdp_result.pdp - pdp_result.pdp[0]).round(2),
             mode = 'lines+markers',
             line = dict(color='grey', width = 4),
             name = f'average prediction <br>for different values of <br>{pdp_result.feature}'
@@ -266,7 +269,7 @@ def plotly_pdp(pdp_result,
         x = pdp_result.feature_grids
         ice_lines = pdp_result.ice_lines.sample(frac_to_plot)
         ice_lines = ice_lines.values if absolute else\
-                    ice_lines.values- np.expand_dims(ice_lines.iloc[:, 0].transpose().values, axis=1)
+                    ice_lines.values - np.expand_dims(ice_lines.iloc[:, 0].transpose().values, axis=1)
 
         for y in ice_lines:
             data.append(
@@ -332,13 +335,15 @@ def plotly_pdp(pdp_result,
                         ),
                          ))
         annotations.append(
-                        go.layout.Annotation(x=pdp_result.feature_grids[
-                                                round(0.5*len(pdp_result.feature_grids))], 
-                                             y=index_prediction, 
-                                             text=f"baseline pred = {np.round(index_prediction,2)}"))
+            go.layout.Annotation(
+                x=pdp_result.feature_grids[
+                            round(0.5*len(pdp_result.feature_grids))], 
+                y=index_prediction, 
+                text=f"baseline pred = {np.round(index_prediction,2)}"))
 
     fig.update_layout(annotations=annotations)
     fig.update_layout(shapes=shapes)
+    fig.update_layout(showlegend=False)
     return fig
 
 
@@ -381,19 +386,23 @@ def plotly_importances_plot(importance_df):
 
 def plotly_tree_predictions(model, observation):
     """
-    returns a plot with all the individual predictions of the DecisionTrees that make up the RandomForest.
+    returns a plot with all the individual predictions of the 
+    DecisionTrees that make up the RandomForest.
     """
     if hasattr(model.estimators_[0], 'classes_'): #if classifier
          preds_df = pd.DataFrame({
                 'model' : range(len(model.estimators_)), 
-                'prediction' : [np.round(100*m.predict_proba(observation)[0, 1], 2) for m in model.estimators_]
+                'prediction' : [
+                        np.round(100*m.predict_proba(observation)[0, 1], 2) 
+                                    for m in model.estimators_]
             })\
             .sort_values('prediction')\
             .reset_index(drop=True)
     else:
         preds_df = pd.DataFrame({
             'model' : range(len(model.estimators_)), 
-            'prediction' : [m.predict(observation)[0] for m in model.estimators_]})\
+            'prediction' : [m.predict(observation)[0] 
+                                for m in model.estimators_]})\
             .sort_values('prediction')\
             .reset_index(drop=True)
         
@@ -430,7 +439,8 @@ def plotly_tree_predictions(model, observation):
 
 
 
-def plotly_confusion_matrix(y_true, pred_probas, cutoff=0.5, labels = None, normalized=True):
+def plotly_confusion_matrix(y_true, pred_probas, cutoff=0.5, 
+                            labels = None, normalized=True):
 
     cm = confusion_matrix(y_true, np.where(pred_probas>cutoff,1,0))
     cm_labels = np.array([['TN', 'FP'],['FN', 'TP']])
@@ -465,25 +475,27 @@ def plotly_confusion_matrix(y_true, pred_probas, cutoff=0.5, labels = None, norm
     for x in range(cm.shape[0]):
         for y in range(cm.shape[1]):
             text= str(cm[x,y]) + '%' if normalized else str(cm[x,y])
-            annotations.append(go.layout.Annotation(x=fig.data[0].x[y], 
-                                                    y=fig.data[0].y[x], 
-                                                    text=text, 
-                                                    showarrow=False,
-                                                   font=dict(
-                                                        size=20
-                                                    ),))
-            annotations.append(go.layout.Annotation(x=fig.data[0].x[y], 
-                                                    y=fig.data[0].y[x], 
-                                                    text=cm_labels[x,y], 
-                                                    showarrow=False,
-                                           font=dict(
-                                                        family= "Old Standard TT, Bold", 
-                                                        size=90,
-                                                        color="black"
-                                                    ),
-                                            opacity=0.05,
-                                           ))
-    
+            annotations.append(
+                go.layout.Annotation(x=fig.data[0].x[y], 
+                                    y=fig.data[0].y[x], 
+                                    text=text, 
+                                    showarrow=False,
+                                    font=dict(
+                                        size=20
+                                    ),))
+            annotations.append(
+                go.layout.Annotation(x=fig.data[0].x[y], 
+                                    y=fig.data[0].y[x], 
+                                    text=cm_labels[x,y], 
+                                    showarrow=False,
+                                    font=dict(
+                                        family= "Old Standard TT, Bold", 
+                                        size=90,
+                                        color="black"
+                                    ),
+                                    opacity=0.05,
+                                    ))
+
     fig.update_layout(annotations=annotations)
     return fig
 
@@ -502,7 +514,8 @@ def plotly_roc_auc_curve(true_y, pred_probas, cutoff=None):
                        width=450,
                        height=450,
                        xaxis= dict(title='False Positive Rate', range=[0,1]),
-                       yaxis = dict(title='True Positive Rate', range=[0,1], scaleanchor='y', scaleratio=1))
+                       yaxis = dict(title='True Positive Rate', range=[0,1], 
+                                    scaleanchor='y', scaleratio=1))
     fig = go.Figure(data, layout)
     shapes = [dict(
                             type='line',
@@ -529,18 +542,29 @@ def plotly_roc_auc_curve(true_y, pred_probas, cutoff=None):
                  x0=fpr[threshold_idx], x1=fpr[threshold_idx], y0=0, y1=1,
                  line=dict(color="lightslategray", width=1)))
         
-        rep = classification_report(true_y, np.where(pred_probas >= cutoff, 1,0), output_dict=True)
+        rep = classification_report(true_y, np.where(pred_probas >= cutoff, 1,0), 
+                                    output_dict=True)
         
-        annotations = [go.layout.Annotation(x=0.6, y=0.45, text=f"Cutoff: {np.round(cutoff,3)}",
-                                           showarrow=False, align="right", xanchor='left', yanchor='top'),
-                       go.layout.Annotation(x=0.6, y=0.4, text=f"Accuracy: {np.round(rep['accuracy'],3)}",
-                                           showarrow=False, align="right", xanchor='left', yanchor='top'),
-                       go.layout.Annotation(x=0.6, y=0.35, text=f"Precision: {np.round(rep['1']['precision'], 3)}",
-                                           showarrow=False, align="right", xanchor='left', yanchor='top'),
-                       go.layout.Annotation(x=0.6, y=0.30, text=f"Recall: {np.round(rep['1']['recall'], 3)}",
-                                           showarrow=False, align="right", xanchor='left', yanchor='top'),
-                       go.layout.Annotation(x=0.6, y=0.25, text=f"F1-score: {np.round(rep['1']['f1-score'], 3)}",
-                                           showarrow=False, align="right", xanchor='left', yanchor='top'),]
+        annotations = [go.layout.Annotation(x=0.6, y=0.45, 
+                            text=f"Cutoff: {np.round(cutoff,3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
+                       go.layout.Annotation(x=0.6, y=0.4, 
+                            text=f"Accuracy: {np.round(rep['accuracy'],3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
+                       go.layout.Annotation(x=0.6, y=0.35, 
+                            text=f"Precision: {np.round(rep['1']['precision'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
+                       go.layout.Annotation(x=0.6, y=0.30, 
+                            text=f"Recall: {np.round(rep['1']['recall'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
+                       go.layout.Annotation(x=0.6, y=0.25, 
+                            text=f"F1-score: {np.round(rep['1']['f1-score'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),]
         fig.update_layout(annotations=annotations)
                                             
     fig.update_layout(shapes=shapes)
@@ -586,25 +610,25 @@ def plotly_pr_auc_curve(true_y, pred_probas, cutoff=None):
                     output_dict=True)
         
         annotations = [go.layout.Annotation(x=0.6, y=0.45, 
-                                text=f"Cutoff: {np.round(cutoff,3)}",
-                                showarrow=False, align="right", 
-                                xanchor='left', yanchor='top'),
+                            text=f"Cutoff: {np.round(cutoff,3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
                        go.layout.Annotation(x=0.6, y=0.4, 
-                                text=f"Accuracy: {np.round(report['accuracy'],3)}",
-                                showarrow=False, align="right", 
-                                xanchor='left', yanchor='top'),
+                            text=f"Accuracy: {np.round(report['accuracy'],3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
                        go.layout.Annotation(x=0.6, y=0.35, 
-                                text=f"Precision: {np.round(report['1']['precision'], 3)}",
-                                showarrow=False, align="right", 
-                                xanchor='left', yanchor='top'),
+                            text=f"Precision: {np.round(report['1']['precision'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
                        go.layout.Annotation(x=0.6, y=0.30, 
-                                text=f"Recall: {np.round(report['1']['recall'], 3)}",
-                                showarrow=False, align="right", 
-                                xanchor='left', yanchor='top'),
+                            text=f"Recall: {np.round(report['1']['recall'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),
                        go.layout.Annotation(x=0.6, y=0.25, 
-                                text=f"F1-score: {np.round(report['1']['f1-score'], 3)}",
-                                showarrow=False, align="right", 
-                                xanchor='left', yanchor='top'),]
+                            text=f"F1-score: {np.round(report['1']['f1-score'], 3)}",
+                            showarrow=False, align="right", 
+                            xanchor='left', yanchor='top'),]
         fig.update_layout(annotations=annotations)
                                             
     fig.update_layout(shapes=shapes)
@@ -632,8 +656,9 @@ def plotly_shap_scatter_plot(shap_values, X, display_columns):
                                       colorscale='Bluered',
                                       showscale=True,
                                       opacity=0.3,
-                                      colorbar=dict(title="feature value <br> (red is high)", 
-                                                    showticklabels=False),
+                                      colorbar=dict(
+                                        title="feature value <br> (red is high)", 
+                                        showticklabels=False),
                                   ),
                                 name=col,
                                 showlegend=False,
@@ -645,8 +670,10 @@ def plotly_shap_scatter_plot(shap_values, X, display_columns):
                                             X[col].replace({-999:np.nan})))],
                                 ),
                      row=i+1, col=1);
-        fig.update_xaxes(showgrid=False, zeroline=False, range=[min_shap, max_shap], row=i+1, col=1)
-        fig.update_yaxes(showgrid=False, zeroline=False, showticklabels=False, row=i+1, col=1)
+        fig.update_xaxes(showgrid=False, zeroline=False, 
+                         range=[min_shap, max_shap], row=i+1, col=1)
+        fig.update_yaxes(showgrid=False, zeroline=False, 
+                         showticklabels=False, row=i+1, col=1)
     
     fig.update_layout(height=100+len(display_columns)*50,
                       margin=go.layout.Margin(
