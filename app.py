@@ -23,7 +23,7 @@ pio.templates.default = "none"
 
 print("loading DataExplainer object...")
 
-TITLE = 'Model Explainer'
+TITLE = 'Titanic Explainer'
 
 explainer = pickle.load(open(
                         Path.cwd() / 'titanic_explainer.pkl', 'rb'))
