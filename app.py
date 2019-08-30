@@ -16,17 +16,17 @@ import numpy as np
 import pandas as pd
 
 from pathlib import Path
-import pickle
+from joblib import load
 
 import plotly.io as pio
+
 pio.templates.default = "none"
 
 print("loading DataExplainer object...")
 
 TITLE = 'Titanic Explainer'
 
-explainer = pickle.load(open(
-                        Path.cwd() / 'titanic_explainer.pkl', 'rb'))
+explainer = load(Path.cwd() / 'titanic_explainer.joblib')
 
 print('Loading Dash...')
 app = dash.Dash(__name__)
@@ -49,7 +49,10 @@ def model_tab(explainer):
                 dcc.Slider(id='precision-binsize',
                             min = 0.01, max = 0.5, step=0.01, value=0.05,
                             marks={0.01: '0.01', 0.05: '0.05', 0.10: '0.10',
-                                    0.33: '0.33', 0.5: '0.5'}, included=False),
+                                   0.20: '0.20', 0.25: '0.25' , 0.33: '0.33',
+                                   0.5: '0.5'},
+                            included=False,
+                            tooltip = {'always_visible' : True})
             ], style={'margin': 20}),
             dcc.Graph(id='precision-graph'),
             html.Div([
@@ -57,7 +60,9 @@ def model_tab(explainer):
                 dcc.Slider(id='precision-cutoff',
                             min = 0.01, max = 0.99, step=0.01, value=0.5,
                             marks={0.01: '0.01', 0.25: '0.25', 0.50: '0.50',
-                                    0.75: '0.75', 0.99: '0.99'}, included=False),
+                                    0.75: '0.75', 0.99: '0.99'},
+                            included=False,
+                            tooltip = {'always_visible' : True})
             ], style={'margin': 20}),
         ]),
     ]),
@@ -87,27 +92,38 @@ def model_tab(explainer):
     dbc.Row([
         dbc.Col([
             html.Label('Model importances:'),
+            html.Div([
+                html.Div([
+                    dcc.RadioItems(
+                    id='permutation-or-shap',
+                    options=[
+                        {'label': 'Permutation Importances',
+                        'value': 'permutation'},
+                        {'label': 'SHAP values',
+                        'value': 'shap'}
+                    ],
+                    value='shap',
+                    labelStyle={'display': 'inline-block'}),
+                ], style={'width':'30%', 'display': 'inline-block'}),
+                html.Div([
+                    html.Div('Select max number of importances to display:'),
+                    dcc.Dropdown(id='importance-tablesize',
+                                options = [{'label': str(i+1), 'value':i+1}
+                                            for i in range(len(explainer.columns))],
+                                value=min(15, len(explainer.columns))),
 
-            dcc.RadioItems(
-                id='permutation-or-shap',
-                options=[
-                    {'label': 'Permutation Importances',
-                     'value': 'permutation'},
-                    {'label': 'SHAP values',
-                     'value': 'shap'}
-                ],
-                value='shap',
-                labelStyle={'display': 'inline-block'}
-            ),
-            daq.ToggleSwitch(
-                id='group-categoricals',
-                label='Group Categoricals',
-            ),
-            html.Div('Select max number of importances to display:'),
-            dcc.Slider(id='importance-tablesize',
-                        min = 1, max = len(explainer.columns),
-                        value=15),
-            dcc.Graph(id='importances-graph'),
+                ], style={'width':'30%', 'display': 'inline-block'}),
+                html.Div([
+                    daq.ToggleSwitch(
+                        id='group-categoricals',
+                        label='Group Categoricals',
+                    ),
+                ], style={'width':'30%', 'display': 'inline-block'}),
+            ]),
+
+            html.Div([
+                dcc.Graph(id='importances-graph'),
+            ])
         ])
     ]),
     ], fluid=True)
@@ -213,25 +229,51 @@ def dependence_tab(explainer):
     dbc.Row([
         dbc.Col([
             html.H3('Individual Shap Values'),
-            html.Label('(Click on a dot to display dependence graph)'),
-            dcc.Graph(id='dependence-shap-scatter-graph',
-                      figure=explainer.plot_shap_summary(topx=20))
+            html.Div([
+                html.Div([
+                    html.Label('(Click on a dot to display dependence graph)'),
+                ], style = dict(width='48%', display='inline-block')),
+                html.Div([
+                    html.Label('no of columns:'),
+                    dcc.Dropdown(id='dependence-scatter-depth',
+                        options = [{'label': str(i+1), 'value':i+1}
+                                        for i in range(len(explainer.columns))],
+                        value=min(10, len(explainer.columns))),
+                ], style = dict(width='28%', display='inline-block')),
+                html.Div([
+                    daq.ToggleSwitch(
+                        id='dependence-group-categoricals',
+                        label='Group Categoricals'),
+                ], style = dict(width='18%', display='inline-block')),
+            ], style = {'width':'100%'}),
+            dcc.Loading(id="loading-dependence-shap-scatter",
+                    children=[dcc.Graph(id='dependence-shap-scatter-graph')])
         ]),
         dbc.Col([
-            html.Label('Highlight index:'),
-            dbc.Input(id='dependence-highlight-index',
-                        placeholder="Highlight index...",
-                        debounce=True),
-            html.Label('Plot dependence for column:'),
-            dcc.Dropdown(id='dependence-col',
-                    options=[{'label': col, 'value':col}
-                                for col in explainer.mean_abs_shap_df()\
-                                                            .Feature.tolist()],
-                    value=explainer.mean_abs_shap_df().Feature[0]),
-            html.Label('Color observation by column:'),
-            dcc.Dropdown(id='dependence-color-col',
-                    options=[{'label': col, 'value':col}
-                                for col in explainer.columns]),
+            html.Div([
+                html.Div([
+                    html.Label('Plot dependence for column:'),
+                    dcc.Dropdown(id='dependence-col',
+                        options=[{'label': col, 'value':col}
+                                    for col in explainer.mean_abs_shap_df()\
+                                                                .Feature.tolist()],
+                        value=explainer.mean_abs_shap_df().Feature[0]),
+                ], style = dict(width='40%', display='inline-block')),
+                html.Div([
+                    html.Label('Color observation by column:'),
+                    dcc.Dropdown(id='dependence-color-col',
+                        options=[{'label': col, 'value':col}
+                                    for col in explainer.mean_abs_shap_df()\
+                                                                .Feature.tolist()],
+                        value=explainer.mean_abs_shap_df().Feature.tolist()[0])
+                ], style = dict(width='40%', display='inline-block')),
+                html.Div([
+                    html.Label('Highlight:'),
+                    dbc.Input(id='dependence-highlight-index',
+                            placeholder="Highlight index...",
+                            debounce=True),
+                ], style = dict(width='20%', display='inline-block'))
+            ]),
             dcc.Graph(id='dependence-graph')
         ])
     ]),
@@ -244,25 +286,48 @@ def interactions_tab(explainer):
         dbc.Col([
             html.H3('Shap Interaction Values'),
             html.Label('Display shap interaction values for column:'),
-            dcc.Dropdown(id='interaction-col',
-                    options=[{'label': col, 'value':col}
-                                for col in explainer.mean_abs_shap_df()\
-                                                            .Feature.tolist()],
-                    value=explainer.mean_abs_shap_df().Feature[0]),
+            html.Div([
+                html.Div([
+                    dcc.Dropdown(id='interaction-col',
+                        options=[{'label': col, 'value':col}
+                                    for col in explainer.mean_abs_shap_df()\
+                                                                .Feature.tolist()],
+                        value=explainer.mean_abs_shap_df().Feature[0])
+                ], style = {'width': '50%', 'display': 'inline-block'}),
+                html.Div([
+                    html.Label('no of columns:'),
+                    dcc.Dropdown(id='interaction-scatter-depth',
+                        options = [{'label': str(i+1), 'value':i+1}
+                                        for i in range(len(explainer.columns)-1)],
+                        value=min(10, len(explainer.columns)-1)),
+                ], style = dict(width='30%', display='inline-block')),
+                html.Div([
+                    daq.ToggleSwitch(
+                        id='interaction-group-categoricals',
+                        label='Group Categoricals')
+                ], style = {'width': '20%', 'display': 'inline-block'}),
+            ], style = {'width':'100%'}),
             html.Label('(Click on a dot to display interaction graph)'),
             dcc.Loading(id="loading-interaction-shap-scatter",
                          children=[dcc.Graph(id='interaction-shap-scatter-graph')])
         ], width=6),
         dbc.Col([
-            html.Label('Highlight index:'),
-            dbc.Input(id='interaction-highlight-index',
+            html.Div([
+                html.Div([
+                    html.Label('Show interaction with column:'),
+                    dcc.Dropdown(id='interaction-interact-col',
+                        options=[{'label': col, 'value':col}
+                                    for col in explainer.mean_abs_shap_df()\
+                                                                .Feature.tolist()],
+                        value=explainer.mean_abs_shap_df().Feature[0]),
+                ], style = {'width': '80%', 'display': 'inline-block'}),
+                html.Div([
+                    html.Label('Highlight:'),
+                    dbc.Input(id='interaction-highlight-index',
                         placeholder="Highlight index...", debounce=True),
-            html.Label('Show interaction with column:'),
-            dcc.Dropdown(id='interaction-interact-col',
-                    options=[{'label': col, 'value':col}
-                                for col in explainer.mean_abs_shap_df()\
-                                                            .Feature.tolist()],
-                    value=explainer.mean_abs_shap_df().Feature[0]),
+                ], style = {'width': '20%', 'display': 'inline-block'}),
+            ]),
+
             html.Label('Shap interaction values:'),
             dcc.Loading(id="loading-interaction-graph",
                          children=[dcc.Graph(id='interaction-graph')]),
@@ -424,6 +489,115 @@ def update_pdp_graph(idx, col):
 
 
 @app.callback(
+    [Output('dependence-shap-scatter-graph', 'figure'),
+     Output('dependence-col', 'options'),
+     Output('dependence-scatter-depth', 'options')],
+    [Input('dependence-group-categoricals', 'value'),
+     Input('dependence-scatter-depth', 'value')])
+def update_dependence_shap_scatter_graph(cats, depth):
+    ctx = dash.callback_context
+    if ctx.triggered:
+        if depth is None: depth = 10
+        plot = explainer.plot_shap_summary(topx=depth, cats=cats)
+        trigger = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if trigger=='dependence-scatter-depth':
+            return (plot, dash.no_update, dash.no_update)
+        else:
+            col_options = [{'label': col, 'value':col}
+                        for col in explainer.mean_abs_shap_df(cats=cats)\
+                                                    .Feature.tolist()]
+            depth_options = [{'label': str(i+1), 'value':i+1}
+                        for i in range(len(col_options))]
+            return (plot, col_options, depth_options)
+    raise PreventUpdate
+
+
+@app.callback(
+    [Output('dependence-highlight-index', 'value'),
+     Output('dependence-col', 'value'),
+     Output('dependence-color-col', 'options'),
+     Output('dependence-color-col', 'value')],
+    [Input('dependence-shap-scatter-graph', 'clickData')],
+    [State('dependence-group-categoricals', 'value')])
+def display_scatter_click_data(clickData, cats):
+    if clickData is not None:
+        #return str(clickData)
+        idx = clickData['points'][0]['pointIndex']
+        col = clickData['points'][0]['text'].split('=')[0]
+
+        sorted_interact_cols = explainer.shap_top_interactions(col, cats=cats)
+        options = [{'label': col, 'value':col}
+                                     for col in sorted_interact_cols]
+        value =   sorted_interact_cols[0]
+        return (idx, col, options, value)
+    raise PreventUpdate
+
+
+@app.callback(
+    Output('dependence-graph', 'figure'),
+    [Input('dependence-col', 'value'),
+     Input('dependence-color-col', 'value'),
+     Input('dependence-highlight-index', 'value')],
+    [State('dependence-group-categoricals', 'value')])
+def update_dependence_graph(col, color_col, idx, cats):
+    if color_col is not None:
+        return explainer.plot_dependence(
+                    col, color_col, highlight_idx=idx, cats=cats)
+    raise PreventUpdate
+
+
+@app.callback(
+    [Output('interaction-shap-scatter-graph', 'figure'),
+     Output('interaction-interact-col', 'options'),
+     Output('interaction-scatter-depth', 'options')],
+    [Input('interaction-col', 'value'),
+     Input('interaction-group-categoricals', 'value'),
+     Input('interaction-scatter-depth', 'value')])
+def update_interaction_scatter_graph(col, cats, depth):
+    ctx = dash.callback_context
+    if ctx.triggered:
+        if depth is None: depth = 10
+        plot = plot = explainer.plot_shap_interaction_summary(col, topx=depth, cats=cats)
+        trigger = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if trigger=='interaction-scatter-depth':
+            return (plot, dash.no_update, dash.no_update)
+        else:
+            interact_cols = explainer.shap_top_interactions(col, cats=cats)
+            col_options = [{'label': col, 'value':col} for col in interact_cols]
+            depth_options = [{'label': str(i+1), 'value':i+1} for i in range(len(col_options))]
+            return (plot, col_options, depth_options)
+    raise PreventUpdate
+
+
+@app.callback(
+    [Output('interaction-highlight-index', 'value'),
+     Output('interaction-interact-col', 'value')],
+    [Input('interaction-shap-scatter-graph', 'clickData')])
+def display_scatter_click_data(clickData):
+    if clickData is not None:
+        #return str(clickData)
+        idx = clickData['points'][0]['pointIndex']
+        col = clickData['points'][0]['text'].split('=')[0]
+        return (idx, col)
+    raise PreventUpdate
+
+
+@app.callback(
+    Output('interaction-graph', 'figure'),
+    [Input('interaction-col', 'value'),
+     Input('interaction-interact-col', 'value'),
+     Input('interaction-highlight-index', 'value')],
+    [State('interaction-group-categoricals', 'value')])
+def update_dependence_graph(col, interact_col, idx, cats):
+    if interact_col is not None:
+        return explainer.plot_interaction_dependence(
+                col, interact_col, highlight_idx=idx, cats=cats)
+    raise PreventUpdate
+
+
+@app.callback(
     Output('tree-predictions-graph', 'figure'),
     [Input('index-store', 'data')]
 )
@@ -451,73 +625,6 @@ def display_click_data(clickData, idx, old_columns):
     raise PreventUpdate
 
 
-@app.callback(
-    [Output('dependence-highlight-index', 'value'),
-     Output('dependence-col', 'value'),
-     Output('dependence-color-col', 'options'),
-     Output('dependence-color-col', 'value')],
-    [Input('dependence-shap-scatter-graph', 'clickData')])
-def display_scatter_click_data(clickData):
-    if clickData is not None:
-        #return str(clickData)
-        idx = clickData['points'][0]['pointIndex']
-        col = clickData['points'][0]['text'].split('=')[0]
-
-        sorted_interact_cols = explainer.shap_top_interactions(col)
-        dropdown_options = [{'label': col, 'value':col}
-                                    for col in sorted_interact_cols]
-        return (idx, col, dropdown_options, sorted_interact_cols[1])
-    raise PreventUpdate
-
-
-@app.callback(
-    Output('dependence-graph', 'figure'),
-    [Input('dependence-col', 'value'),
-     Input('dependence-color-col', 'value'),
-     Input('dependence-highlight-index', 'value')])
-def update_dependence_graph(col, color_col, idx):
-    if color_col is not None:
-        return explainer.plot_dependence(
-                    col, color_col, highlight_idx=idx)
-    raise PreventUpdate
-
-
-@app.callback(
-    [Output('interaction-shap-scatter-graph', 'figure'),
-     Output('interaction-interact-col', 'options')],
-    [Input('interaction-col', 'value')])
-def update_interaction_scatter_graph(col):
-    plot = explainer.plot_shap_interaction_summary(col, topx=20)
-    interact_cols = explainer.shap_top_interactions(col)
-    options = [{'label': col, 'value':col} for col in interact_cols]
-    return (plot, options)
-
-
-@app.callback(
-    [Output('interaction-highlight-index', 'value'),
-     Output('interaction-interact-col', 'value')],
-    [Input('interaction-shap-scatter-graph', 'clickData')])
-def display_scatter_click_data(clickData):
-    if clickData is not None:
-        #return str(clickData)
-        idx = clickData['points'][0]['pointIndex']
-        col = clickData['points'][0]['text'].split('=')[0]
-        return (idx, col)
-    raise PreventUpdate
-
-
-@app.callback(
-    Output('interaction-graph', 'figure'),
-    [Input('interaction-col', 'value'),
-     Input('interaction-interact-col', 'value'),
-     Input('interaction-highlight-index', 'value')])
-def update_dependence_graph(col, interact_col, idx):
-    if interact_col is not None:
-        return explainer.plot_interaction_dependence(
-                col, interact_col, highlight_idx=idx)
-    raise PreventUpdate
-
-
 if __name__ == '__main__':
     print('Starting server...')
-    app.run_server(port=8065)
+    app.run_server(port=8073)

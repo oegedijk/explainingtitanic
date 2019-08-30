@@ -37,6 +37,89 @@ def get_feature_dict(all_cols, cats=None):
     return feature_dict
 
 
+def retrieve_onehot_value(X, encoded_col):
+    """
+    Returns a pd.Series with the original values that were onehot encoded
+    """
+    cat_cols = [c for c in X.columns if c.startswith(encoded_col+'_')]
+    
+    assert len(cat_cols) > 0, \
+        f"No columns that start with {encoded_col} in DataFrame"
+        
+    feature_value = np.argmax(X[cat_cols].values, axis=1)
+    
+    # if not a single 1 then encoded feature must have been dropped
+    feature_value[np.max(X[cat_cols].values, axis=1)==0]=-1 
+    mapping = {-1: "NOT_ENCODED"}
+    mapping.update({i: col[len(encoded_col):] for i, col in enumerate(cat_cols)})
+    
+    return pd.Series(feature_value).map(mapping)
+
+
+def merge_categorical_shap_values(X, shap_values, cats=None):
+    """ 
+    Returns a new feature Dataframe X_cats and new shap values DataFrame shap_df
+    where the shap values of onehotencoded categorical features have been 
+    summed up.
+    """ 
+    feature_dict = get_feature_dict(X.columns, cats)
+    shap_df = pd.DataFrame(shap_values, columns=X.columns)
+    X_cats = X.copy()
+    
+    for col_name, col_list in feature_dict.items():
+        if len(col_list) > 1:
+            shap_df[col_name]=shap_df[col_list].sum(axis=1)
+            shap_df.drop(col_list, axis=1, inplace=True)
+            
+            X_cats[col_name]=retrieve_onehot_value(X, col_name)
+            X_cats.drop(col_list, axis=1, inplace=True)
+    
+    return X_cats, shap_df.values
+
+
+def merge_categorical_shap_interaction_values(
+            old_columns, new_columns, shap_interaction_values):
+    """ 
+    Returns a 3d numpy array shap_interaction_values where the categorical 
+    columns have been summed up.
+    
+    Caution:
+    Column names in new_columns that are not found in old_columns are 
+    assumed to be categorical feature names.
+    
+    """ 
+    
+    if isinstance(old_columns, pd.DataFrame): 
+        old_columns = old_columns.columns.tolist()
+    if isinstance(new_columns, pd.DataFrame): 
+        new_columns = new_columns.columns.tolist()
+        
+    if not isinstance(old_columns, list) : old_columns = old_columns.tolist()
+    if not isinstance(new_columns, list) : new_columns = new_columns.tolist()
+        
+
+    cats = [col for col in new_columns if col not in old_columns]
+    feature_dict = get_feature_dict(old_columns, cats)
+    
+    siv = np.zeros((shap_interaction_values.shape[0], 
+                    len(new_columns), 
+                    len(new_columns)))
+    
+    for new_col1 in new_columns:
+        for new_col2 in new_columns:
+            newcol_idx1 = new_columns.index(new_col1)
+            newcol_idx2 = new_columns.index(new_col2)
+            oldcol_idxs1 = [old_columns.index(col) 
+                                for col in feature_dict[new_col1]]
+            oldcol_idxs2 = [old_columns.index(col) 
+                                for col in feature_dict[new_col2]]
+            siv[:, newcol_idx1, newcol_idx2] = \
+                shap_interaction_values[:, oldcol_idxs1, :][:, :, oldcol_idxs2]\
+                .sum(axis=(1,2))
+            
+    return siv
+
+
 def permutation_importances(model, X, y, metric, cats=None, 
                             greater_is_better=True, needs_proba=True, 
                             sort=True, verbose=0):

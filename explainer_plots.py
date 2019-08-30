@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from pandas.api.types import is_string_dtype, is_numeric_dtype
+
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
@@ -179,40 +181,68 @@ def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None,
     
     x = X[col_name].replace({-999:np.nan})
     if len(shap_values.shape)==2:
-        y = shap_values[:, X.columns.get_loc(col_name)].round(shap_round)
+        y = shap_values[:, X.columns.get_loc(col_name)]
     elif len(shap_values.shape)==3 and interact_col_name is not None:
         y = shap_values[:, X.columns.get_loc(col_name), X.columns.get_loc(interact_col_name)]
     else:
         raise Exception('Either provide shap_values or shap_interaction_values with an interact_col_name')
     
     if interact_col_name is not None:
-        colors = X[interact_col_name]
         text = [f'{col_name}={col_val}<br>{interact_col_name}={col_col_val}<br>SHAP={shap_val}' 
-                    for col_val, col_col_val, shap_val in zip(x, colors, y)]
+                    for col_val, col_col_val, shap_val in zip(x, X[interact_col_name], np.round(y, shap_round))]
     else:
         text = [f'{col_name}={col_val}<br>SHAP={shap_val}' 
-                    for col_val, shap_val in zip(x, y)]
+                    for col_val, shap_val in zip(x, np.round(y, shap_round))]
         
-    trace0 = go.Scatter(
-                x=x, 
-                y=y, 
-                mode='markers',
-                text=text,
-                hoverinfo="text")
-            
-    data = [trace0]
+    data = []
+    
+    if interact_col_name is not None and is_string_dtype(X[interact_col_name]):
+        for onehot_col in X[interact_col_name].unique().tolist():
+                data.append(go.Scatter(
+                                x=X[X[interact_col_name]==onehot_col][col_name],
+                                y=shap_values[X[interact_col_name]==onehot_col, X.columns.get_loc(col_name)],
+                                mode='markers',
+                                marker=dict(
+                                      size=7,
+                                      showscale=False,
+                                      opacity=0.6,
+                                  ),
+                                
+                                showlegend=True,
+                                opacity=0.8,
+                                hoverinfo="text",
+                                name=onehot_col,
+                                text=[f'{col_name}={col_val}<br>{interact_col_name}={col_col_val}<br>SHAP={shap_val}' 
+                                        for col_val, col_col_val, shap_val in zip(
+                                            X[X[interact_col_name]==onehot_col][col_name], 
+                                            X[X[interact_col_name]==onehot_col][interact_col_name], 
+                                            np.round(shap_values[X[interact_col_name]==onehot_col, X.columns.get_loc(col_name)], shap_round))]
+                                ))
+                
+    else:
+        data.append(go.Scatter(
+                    x=x, 
+                    y=y, 
+                    mode='markers',
+                    text=text,
+                    hoverinfo="text",
+                    marker=dict(size=7, opacity=0.6)
+                ))
+        
     layout = go.Layout(
             title=f'dependence plot for {col_name}',
             paper_bgcolor='rgba(245, 246, 249, 1)',
             plot_bgcolor='rgba(245, 246, 249, 1)',
             showlegend=False,
+            hovermode='closest',
             xaxis=dict(title=col_name),
             yaxis=dict(title='SHAP value')
         )
         
     fig = go.Figure(data, layout)
     
-    if interact_col_name is not None:
+    if interact_col_name is not None and is_numeric_dtype(X[interact_col_name]):
+        colors = X[interact_col_name]
         fig.update_traces(marker=dict(
                 color = colors,
                 colorscale='Bluered',
@@ -220,6 +250,10 @@ def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None,
                     title=interact_col_name
                 ),
                 showscale=True))
+    
+    if interact_col_name is not None and is_string_dtype(X[interact_col_name]):
+        fig.update_layout(showlegend=True)
+                                                      
     if highlight_idx is not None and highlight_idx < len(x):
         fig.add_trace(go.Scatter(
                 x=[x[highlight_idx]], 
@@ -234,6 +268,7 @@ def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None,
                         width=4
                     )
                 ),
+                name = f"index {highlight_idx}",
                 text=f"index {highlight_idx}",
                 hoverinfo="text"))
     return fig
@@ -241,7 +276,9 @@ def plotly_dependence_plot(X, shap_values, col_name, interact_col_name=None,
 
 def plotly_pdp(pdp_result, 
                display_index=None, index_feature_value=None, index_prediction=None,
-               absolute=True, plot_lines=True, frac_to_plot=100):
+               absolute=True, plot_lines=True, frac_to_plot=100, feature_name=None):
+
+    if feature_name is None: feature_name = pdp_result.feature
 
     trace0 = go.Scatter(
             x = pdp_result.feature_grids,
@@ -284,7 +321,7 @@ def plotly_pdp(pdp_result,
                 )
             )
 
-    layout = go.Layout(title = f'pdp plot for {pdp_result.feature}')
+    layout = go.Layout(title = f'pdp plot for {feature_name}')
 
     fig = go.Figure(data=data, layout=layout)
 
@@ -647,7 +684,28 @@ def plotly_shap_scatter_plot(shap_values, X, display_columns):
                          subplot_titles=display_columns, shared_xaxes=True)
     
     for i, col in enumerate(display_columns):
-        fig.add_trace(go.Scatter(x=shap_df[col],
+        if is_string_dtype(X[col]):
+            for onehot_col in X[col].unique().tolist():
+                fig.add_trace(go.Scatter(
+                                x=shap_df[X[col]==onehot_col][col],
+                                y=np.random.rand(len(shap_df[X[col]==onehot_col])),
+                                mode='markers',
+                                marker=dict(
+                                      size=5,
+                                      showscale=False,
+                                      opacity=0.3,
+                                  ),
+                                name=onehot_col,
+                                showlegend=False,
+                                opacity=0.8,
+                                hoverinfo="text",
+                                text=[f"{col}={onehot_col}<br>shap={np.round(shap,3)}<br>index={i}" 
+                                      for i, shap in zip(shap_df[X[col]==onehot_col].index,
+                                                       shap_df[X[col]==onehot_col][col])],
+                                ),
+                     row=i+1, col=1);
+        else:
+            fig.add_trace(go.Scatter(x=shap_df[col],
                                    y=np.random.rand(len(shap_df)),
                                   mode='markers',
                                   marker=dict(
@@ -682,5 +740,6 @@ def plotly_shap_scatter_plot(shap_values, X, display_columns):
                                 b=50,
                                 t=50,
                                 pad=4
-                            ))
+                            ),
+                      hovermode='closest')
     return fig
