@@ -1,5 +1,5 @@
 # explainingtitanic
-Demonstration of explainerdashboard package. 
+Demonstration of [explainerdashboard](http://www.github.com/oegedijk/explainerdashboard) package. 
 
 A Dash dashboard app that that displays model quality, permutation importances, SHAP values and interactions, and individual trees for sklearn compatible models.
 
@@ -8,14 +8,14 @@ install with `pip install explainerdashoard`
 
 ## Github
 
-[www.github.com/oegedijk/explainerdashboard](www.github.com/oegedijk/explainerdashboard)
+[www.github.com/oegedijk/explainerdashboard](http://www.github.com/oegedijk/explainerdashboard)
 
 ## Documentation
 
-[explainerdashboard.readthedocs.io](explainerdashboard.readthedocs.io)
+[explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io)
 
 ## Heroku deployment 
 
-Deployed at [titanicexplainer.herokuapp.com](titanicexplainer.herokuapp.com)
+Deployed at [titanicexplainer.herokuapp.com](http://titanicexplainer.herokuapp.com)
 
 
