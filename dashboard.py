@@ -5,7 +5,7 @@ from explainerdashboard.dashboards import *
 
 explainer = joblib.load(Path.cwd() / 'titanic_explainer.joblib')
 
-db = RandomForestDashboard(explainer,
+db = ExplainerDashboard(explainer,
                         model_summary=True,
                         contributions=True,
                         shap_dependence=True,
