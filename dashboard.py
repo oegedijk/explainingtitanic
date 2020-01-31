@@ -8,7 +8,6 @@ from explainerdashboard.explainers import *
 from explainerdashboard.dashboards import *
 from explainerdashboard.datasets import *
 
-# explainer = joblib.load(Path.cwd() / 'titanic_explainer.joblib')
 print('loading data...')
 X_train, y_train, X_test, y_test = titanic_survive()
 train_names, test_names = titanic_names()
