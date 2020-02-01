@@ -35,3 +35,5 @@ server = db.app.server
 if __name__ == '__main__':
     print('Starting server...')
     db.run(8050)
+    
+    
