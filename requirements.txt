@@ -1,4 +1,4 @@
 gunicorn
-explainerdashboard>=0.1.10.0
+explainerdashboard>=0.1.10.1
 dash>=1.8.0
 scikit-learn
