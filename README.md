@@ -10,9 +10,13 @@ install with `pip install explainerdashoard`
 
 [www.github.com/oegedijk/explainerdashboard](http://www.github.com/oegedijk/explainerdashboard)
 
+
+
 ## Documentation
 
-[explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io)
+[explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io).
+
+Example [notebook](http://www.github.com/oegedijk/explainerdashboard/dashboard_examples.ipynb).
 
 ## Heroku deployment 
 
