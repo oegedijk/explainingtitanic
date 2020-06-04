@@ -1,8 +1,4 @@
-from pathlib import Path
-import joblib
-
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score
 
 from explainerdashboard.explainers import *
 from explainerdashboard.dashboards import *
@@ -17,18 +13,13 @@ model = RandomForestClassifier(n_estimators=50, max_depth=5)
 model.fit(X_train, y_train)
 
 print('building ExplainerBunch...')
-explainer = RandomForestClassifierExplainer(model, X_test, y_test, roc_auc_score, 
+explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
                                cats=['Sex', 'Deck', 'Embarked'],
                                idxs=test_names, 
                                labels=['Not survived', 'Survived'])
 
 print('Building ExplainerDashboard...')
-db = ExplainerDashboard(explainer,
-                        model_summary=True,
-                        contributions=True,
-                        shap_dependence=True,
-                        shap_interaction=True,
-                        decision_trees=True)
+db = ExplainerDashboard(explainer)
 
 server = db.app.server
 
