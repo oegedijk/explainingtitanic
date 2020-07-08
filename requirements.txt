@@ -1,4 +1,4 @@
 gunicorn
 explainerdashboard>=0.2
-dash
+dash>=1.13
 scikit-learn
