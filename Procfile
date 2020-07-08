@@ -1,1 +1,1 @@
-web: gunicorn -w 3 dashboard:server
+web: gunicorn -w 3 db_test:app
