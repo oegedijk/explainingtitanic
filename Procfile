@@ -1,1 +1,1 @@
-web: gunicorn -w 3 dashboard:server
+web: gunicorn --debug -w 3 dashboard:server
