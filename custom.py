@@ -6,27 +6,27 @@ from explainerdashboard.dashboard_components import *
 
 
 class CustomDashboard(ExplainerComponent):
-    def __init__(self, explainer, title="Titanic Explainer",
-                        header_mode="hidden", name=None):
-        super().__init__(explainer, title, header_mode, name)
+    def __init__(self, explainer):
+        super().__init__(explainer, "Titanic Explainer")
         self.precision = PrecisionComponent(explainer, 
                                 hide_cutoff=True, hide_binsize=True, 
                                 hide_binmethod=True, hide_multiclass=True,
+                                hide_selector=True,
                                 cutoff=None)
         self.shap_summary = ShapSummaryComponent(explainer, 
-                                hide_title=True,
+                                hide_title=True, hide_selector=True,
                                 hide_depth=True, depth=8, 
                                 hide_cats=True, cats=True)
         self.shap_dependence = ShapDependenceComponent(explainer, 
-                                hide_title=True,
+                                hide_title=True, hide_selector=True,
                                 hide_cats=True, cats=True, 
-                                hide_highlight=True,
+                                hide_index=True,
                                 col='Fare', color_col="PassengerClass")
         self.connector = ShapSummaryDependenceConnector(self.shap_summary, self.shap_dependence)
         
         self.register_components(self.precision, self.shap_summary, self.shap_dependence, self.connector)
         
-    def _layout(self):
+    def layout(self):
         return dbc.Container([
             html.H1("Titanic Explainer"),
             dbc.Row([

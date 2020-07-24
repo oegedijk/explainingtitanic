@@ -1,1 +1,1 @@
-web: gunicorn --log-level=DEBUG -w 3 dashboard:server
+web: gunicorn --preload -w 3 dashboard:app
