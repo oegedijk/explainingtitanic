@@ -76,7 +76,7 @@ port_card = dbc.Card(
             [
                 html.H4("Multiclass Dashboard", className="card-title"),
                 html.P(
-                    "Predicting the departure port"
+                    "Predicting the departure port "
                     "for passengers on the titanic."
                     ,className="card-text",
                 ),

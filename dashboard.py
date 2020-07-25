@@ -37,7 +37,7 @@ multi_dashboard = ExplainerDashboard(multi_explainer,
 
 custom_dashboard = ExplainerDashboard(clas_explainer, CustomDashboard, hide_header=True,
                         server=app,  url_base_pathname="/custom/", 
-                        external_stylesheets=[dbc.themes.SKETCHY])
+                        external_stylesheets=[dbc.themes.FLATLY])
 
 index_app = dash.Dash(__name__, server=app, url_base_pathname="/", external_stylesheets=[dbc.themes.BOOTSTRAP])
 index_app.layout = index_layout
