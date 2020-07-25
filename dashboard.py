@@ -9,31 +9,34 @@ from explainerdashboard.datasets import *
 import dash_bootstrap_components as dbc
 from custom import CustomDashboard
 
+from pathlib import Path
+import joblib
+
 import plotly.io as pio
 pio.templates.default = "none"
 
-feature_descriptions = {
-    "Sex": "Gender of passenger",
-    "Deck": "The deck the passenger had their cabin on",
-    "PassengerClass": "The class of the ticket: 1st, 2nd or 3rd class",
-    "Fare": "The amount of money people paid", 
-    "No_of_relatives_on_board": "number of siblings, spouses, parents plus children on board",
-    "Embarked": "the port where the passenger boarded the Titanic. Either Southampton, Cherbourg or Queenstown",
-    "Age": "Age of the passenger",
-    "No_of_siblings_plus_spouses_on_board": "The sum of the number of siblings plus the number of spouses on board",
-    "No_of_parents_plus_children_on_board" : "The sum of the number of parents plus the number of children on board",
-}
+# feature_descriptions = {
+#     "Sex": "Gender of passenger",
+#     "Deck": "The deck the passenger had their cabin on",
+#     "PassengerClass": "The class of the ticket: 1st, 2nd or 3rd class",
+#     "Fare": "The amount of money people paid", 
+#     "No_of_relatives_on_board": "number of siblings, spouses, parents plus children on board",
+#     "Embarked": "the port where the passenger boarded the Titanic. Either Southampton, Cherbourg or Queenstown",
+#     "Age": "Age of the passenger",
+#     "No_of_siblings_plus_spouses_on_board": "The sum of the number of siblings plus the number of spouses on board",
+#     "No_of_parents_plus_children_on_board" : "The sum of the number of parents plus the number of children on board",
+# }
 
-train_names, test_names = titanic_names()
+# train_names, test_names = titanic_names()
 
-# classifier
-X_train, y_train, X_test, y_test = titanic_survive()
-model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
-clas_explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
-                               cats=['Sex', 'Deck', 'Embarked'],
-                               idxs=test_names, 
-                               descriptions=feature_descriptions,
-                               labels=['Not survived', 'Survived'])
+# # classifier
+# X_train, y_train, X_test, y_test = titanic_survive()
+# model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+# clas_explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
+#                                cats=['Sex', 'Deck', 'Embarked'],
+#                                idxs=test_names, 
+#                                descriptions=feature_descriptions,
+#                                labels=['Not survived', 'Survived'])
 
 # # regression
 # X_train, y_train, X_test, y_test = titanic_fare()
@@ -53,6 +56,8 @@ clas_explainer = RandomForestClassifierExplainer(model, X_test, y_test,
 #                                 descriptions=feature_descriptions,
 #                                 labels=['Queenstown', 'Southampton', 'Cherbourg'])
 app = Flask(__name__)
+
+clas_explainer = joblib.load(str(Path.cwd()/"pkls"/"clas_explainer.pkl"))
 
 print('Building ExplainerDashboards...')
 clas_dashboard = ExplainerDashboard(clas_explainer, 

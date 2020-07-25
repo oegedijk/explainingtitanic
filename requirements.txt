@@ -2,3 +2,4 @@ gunicorn
 explainerdashboard==0.2.1
 dash>=1.13
 scikit-learn
+joblib
