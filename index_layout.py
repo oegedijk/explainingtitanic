@@ -115,16 +115,31 @@ index_layout =  dbc.Container([
     navbar,     
     dbc.Row([
         dbc.Col([
-            dcc.Markdown("`explainerdashboard` is a python library for quickly building interactive dashboards " 
-             "for explaining the inner workings of machine learning models."),
-            dcc.Markdown("The code below is all you need to build and run the classification "
-                         "dashboard for example:")
+            html.H3("explainerdashboard"),
+            dcc.Markdown("`explainerdashboard` is a python package that makes it easy"
+                         " to quickly build an interactive dashboard that explains the inner "
+                         "workings of a machine learning model."),
+            dcc.Markdown("It allows you to explore model performance, feature importances, SHAP values, "
+                         "partial dependence plots, individual predictions, "
+                        "permutation importances and even individual decision trees "
+                        "within a random forest. All interactively. All with a minimum amount of code."),
+            dcc.Markdown("Due to the modular design, it is also really easy to design your "
+                        "own custom dashboards, such as the custom example below."),
+            dcc.Markdown("Click on 'show code' to see all the code needed to build and "
+                         "run the classifier dashboard for example.")
         ])
     ], justify="center"),
     dbc.Row([
-        dbc.Col([], width=1),
         dbc.Col([
-            dcc.Markdown(
+            dbc.Button(
+                "Show code",
+                id="collapse-button",
+                className="mb-3",
+                color="primary",
+            ),
+            dbc.Collapse(
+                html.Div([
+                dcc.Markdown(
 """
 ```python
 
@@ -135,7 +150,9 @@ from explainerdashboard.explainers import *
 
 X_train, y_train, X_test, y_test = titanic_survive()
 train_names, test_names = titanic_names()
+
 model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
 explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
                                cats=['Sex', 'Deck', 'Embarked'],
                                idxs=test_names, 
@@ -144,12 +161,42 @@ explainer = RandomForestClassifierExplainer(model, X_test, y_test,
                                
 ExplainerDashboard(explainer).run()
 ```
-"""),
+"""),]),
+                
+                id="collapse",
+            ),
+            
         ], width=8),
         
     ], justify="start"),
     dbc.Row([
         dbc.Col([
+            html.H3("Installation"),
+            dcc.Markdown(
+"""
+You can install the library with:
+
+```
+    pip install explainerdashboard
+```
+
+""")
+        ])
+    ], justify="center"),
+    
+    dbc.Row([
+        dbc.Col([
+            dcc.Markdown(
+"""
+More information can be found in the [github repo](http://github.com/oegedijk/explainerdashboard) 
+and the documentation on [readthedocs.io](http://explainerdashboard.readthedocs.io).
+""")
+        ])
+    ], justify="center"),
+    
+    dbc.Row([
+        dbc.Col([
+            html.H3("Examples"),
             dcc.Markdown("""
 Below you can find demonstrations of the three default dashboards for classification, 
 regression and multi class classification problems, plus one demonstration of 
