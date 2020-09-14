@@ -22,7 +22,7 @@ train_names, test_names = titanic_names()
 
 # classifier
 X_train, y_train, X_test, y_test = titanic_survive()
-model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+model = RandomForestClassifier(n_estimators=100).fit(X_train, y_train)
 clas_explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
                                cats=['Sex', 'Deck', 'Embarked'],
                                idxs=test_names, 
