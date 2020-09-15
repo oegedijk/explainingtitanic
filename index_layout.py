@@ -122,18 +122,18 @@ index_layout =  dbc.Container([
                          " to quickly build an interactive dashboard that explains the inner "
                          "workings of a machine learning model."),
             dcc.Markdown("This allows you to open up the 'black box' and show "
-                        "customers, managers, stakeholders, regulators (and yourself)"
-                        "exactly how the machine learning algorithmn generates its predictions.")
+                        "customers, managers, stakeholders, regulators (and yourself) "
+                        "exactly how the machine learning algorithmn generates its predictions."),
             dcc.Markdown("You can explore model performance, feature importances, "
-                        "feature contributions (SHAP values)", 
+                        "feature contributions (SHAP values).", 
                          "(partial) dependences, individual predictions, "
                         "permutation importances and even individual decision trees "
                         "within a random forest. All interactively. All with a minimum amount of code."),
-            dcc.Markdown("Works with all scikit-learn compatible models, including XGBoost, Catboost and LightGBM.")
+            dcc.Markdown("Works with all scikit-learn compatible models, including XGBoost, Catboost and LightGBM."),
             dcc.Markdown("Due to the modular design, it is also really easy to design your "
                         "own custom dashboards, such as the custom example below."),
             dcc.Markdown("Click on 'show code' to see all the code needed to build and "
-                         "run the classifier dashboard example.")
+                         "run the classifier dashboard example below.")
         ])
     ], justify="center"),
     dbc.Row([
