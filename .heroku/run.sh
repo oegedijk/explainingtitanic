@@ -1,1 +1,1 @@
-pip uninstall xgboost
+pip uninstall -y xgboost

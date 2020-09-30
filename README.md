@@ -21,7 +21,7 @@ In order to enable graphviz on heroku enable the following buildpack:
 dtreeviz comes with a xgboost dependency that takes a lot of space, making your slug size >500MB.
 To uninstall it, first enable the shell buildpack: https://github.com/niteoweb/heroku-buildpack-shell.git
 
-and then add `pip uninstall xgboost` to `.heroku/run.sh` 
+and then add `pip uninstall -y xgboost` to `.heroku/run.sh` 
 ## Documentation
 
 [explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io).
