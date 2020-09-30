@@ -1,3 +1,10 @@
+
+# xgboost is a dependency of dtreeviz, but too large (>350M) for heroku
+# so we mock it here:
+from unittest.mock import MagicMock
+import sys
+sys.modules["xgboost"] = MagicMock()
+
 from flask import Flask, request, abort, jsonify
 
 from explainerdashboard.explainers import *
@@ -48,7 +55,6 @@ index_app.layout = index_layout
     [State("collapse", "is_open")],
 )
 def toggle_collapse(n, is_open):
-    print("triggered")
     if n:
         return not is_open
     return is_open

@@ -10,7 +10,11 @@ install with `pip install explainerdashoard`
 
 [www.github.com/oegedijk/explainerdashboard](http://www.github.com/oegedijk/explainerdashboard)
 
+## graphviz buildpack
 
+In order to enable graphviz on heroku enable the following buildpack:
+
+[https://github.com/weibeld/heroku-buildpack-graphviz.git](https://github.com/weibeld/heroku-buildpack-graphviz.git)
 
 ## Documentation
 
