@@ -1,5 +1,3 @@
 gunicorn
-explainerdashboard==0.2.2
-dash>=1.13
-scikit-learn
+explainerdashboard==0.2.4
 joblib
