@@ -23,7 +23,7 @@ train_names, test_names = titanic_names()
 # classifier
 X_train, y_train, X_test, y_test = titanic_survive()
 model = RandomForestClassifier(n_estimators=100).fit(X_train, y_train)
-clas_explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
+clas_explainer = ClassifierExplainer(model, X_test, y_test, 
                                cats=['Sex', 'Deck', 'Embarked'],
                                idxs=test_names, 
                                descriptions=feature_descriptions,
@@ -34,7 +34,7 @@ clas_explainer.calculate_properties()
 # regression
 X_train, y_train, X_test, y_test = titanic_fare()
 model = RandomForestRegressor(n_estimators=50, max_depth=10).fit(X_train, y_train)
-reg_explainer = RandomForestRegressionExplainer(model, X_test, y_test, 
+reg_explainer = RegressionExplainer(model, X_test, y_test, 
                                 cats=['Sex', 'Deck', 'Embarked'], 
                                 idxs=test_names, 
                                 descriptions=feature_descriptions,
@@ -44,7 +44,7 @@ reg_explainer.calculate_properties()
 # multiclass
 X_train, y_train, X_test, y_test = titanic_embarked()
 model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
-multi_explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
+multi_explainer = ClassifierExplainer(model, X_test, y_test, 
                                 cats=['Sex', 'Deck'], 
                                 idxs=test_names,
                                 descriptions=feature_descriptions,
