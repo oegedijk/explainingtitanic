@@ -1,2 +1,4 @@
 explainerdashboard==0.2.5
 joblib
+gunicorn
+requests
