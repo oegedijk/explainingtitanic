@@ -7,11 +7,6 @@ sys.modules["xgboost"] = MagicMock()
 
 from flask import Flask, request, abort, jsonify
 
-from explainerdashboard.explainers import *
-from explainerdashboard.dashboards import *
-from custom import CustomDashboard
-from index_layout import index_layout
-
 import dash
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
@@ -21,6 +16,12 @@ import joblib
 
 import plotly.io as pio
 pio.templates.default = "none"
+
+from explainerdashboard.explainers import *
+from explainerdashboard.dashboards import *
+
+from custom import CustomDashboard
+from index_layout import index_layout
 
 app = Flask(__name__)
 
