@@ -1,4 +1,4 @@
-explainerdashboard==0.2.5
+explainerdashboard==0.2.7.1
 joblib
 gunicorn
 requests

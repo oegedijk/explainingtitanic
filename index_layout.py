@@ -2,6 +2,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
+from dash.dependencies import Input, Output, State
+
 navbar = dbc.NavbarSimple(
     children=[
         dbc.DropdownMenu(
@@ -44,6 +46,38 @@ survive_card = dbc.Card(
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
                        href="http://titanicexplainer.herokuapp.com/classifier"),
+                dbc.Button("Show Code", id="clas-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Classifier Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+
+from sklearn.ensemble import RandomForestClassifier
+
+from explainerdashboard import ClassifierExplainer, ExplainerDashboard
+from explainerdashboard.datasets import titanic_survive, feature_descriptions
+
+X_train, y_train, X_test, y_test = titanic_survive()
+model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
+explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
+                               cats=['Sex', 'Deck', 'Embarked'],
+                               descriptions=feature_descriptions,
+                               labels=['Not survived', 'Survived'])
+                               
+ExplainerDashboard(explainer).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="clas-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="clas-code-modal",
+                    size="lg",
+                ),
             ]
         ),
     ],
@@ -63,6 +97,37 @@ ticket_card = dbc.Card(
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
                        href="http://titanicexplainer.herokuapp.com/regression"),
+                dbc.Button("Show Code", id="reg-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Regression Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+from sklearn.ensemble import RandomForestRegressor
+
+from explainerdashboard import RegressionExplainer, ExplainerDashboard
+from explainerdashboard.datasets import titanic_fare, feature_descriptions
+
+X_train, y_train, X_test, y_test = titanic_fare()
+model = RandomForestRegressor(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
+explainer = RegressionExplainer(model, X_test, y_test, 
+                                cats=['Sex', 'Deck', 'Embarked'], 
+                                descriptions=feature_descriptions,
+                                units="$")
+                               
+ExplainerDashboard(explainer).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="reg-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="reg-code-modal",
+                    size="lg",
+                ),
             ]
         ),
     ],
@@ -82,6 +147,38 @@ port_card = dbc.Card(
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
                        href="http://titanicexplainer.herokuapp.com/multiclass"),
+                dbc.Button("Show Code", id="multi-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Multi Classifier Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+
+from sklearn.ensemble import RandomForestClassifier
+
+from explainerdashboard import ClassifierExplainer, ExplainerDashboard
+from explainerdashboard.datasets import titanic_embarked, feature_descriptions
+
+X_train, y_train, X_test, y_test = titanic_embarked()
+model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
+explainer = ClassifierExplainer(model, X_test, y_test, 
+                                cats=['Sex', 'Deck'], 
+                                descriptions=feature_descriptions,
+                                labels=['Queenstown', 'Southampton', 'Cherbourg'])
+                               
+ExplainerDashboard(explainer).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="multi-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="multi-code-modal",
+                    size="lg",
+                ),
             ]
         ),
     ],
@@ -104,6 +201,108 @@ custom_card = dbc.Card(
                 html.P(),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
                        href="http://titanicexplainer.herokuapp.com/custom"),
+                dbc.Button("Show Code", id="custom-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Custom Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+from explainerdashboard import ExplainerDashboard
+from explainerdashboard.custom import *
+
+import dash_bootstrap_components as dbc
+import dash_html_components as html
+
+class CustomDashboard(ExplainerComponent):
+    def __init__(self, explainer):
+        super().__init__(explainer, "Titanic Explainer")
+        self.precision = PrecisionComponent(explainer, 
+                                hide_cutoff=True, hide_binsize=True, 
+                                hide_binmethod=True, hide_multiclass=True,
+                                hide_selector=True,
+                                cutoff=None)
+        self.shap_summary = ShapSummaryComponent(explainer, 
+                                hide_title=True, hide_selector=True,
+                                hide_depth=True, depth=8, 
+                                hide_cats=True, cats=True)
+        self.shap_dependence = ShapDependenceComponent(explainer, 
+                                hide_title=True, hide_selector=True,
+                                hide_cats=True, cats=True, 
+                                hide_index=True,
+                                col='Fare', color_col="PassengerClass")
+        self.connector = ShapSummaryDependenceConnector(self.shap_summary, self.shap_dependence)
+        
+        self.register_components(self.precision, self.shap_summary, self.shap_dependence, self.connector)
+        
+    def layout(self):
+        return dbc.Container([
+            html.H1("Titanic Explainer"),
+            dbc.Row([
+                dbc.Col([
+                    html.H3("Model Performance"),
+                    html.Div("As you can see on the right, the model performs quite well."),
+                    html.Div("The higher the predicted probability of survival predicted by"
+                             "the model on the basis of learning from examples in the training set"
+                             ", the higher is the actual percentage for a person surviving in "
+                             "the test set"),
+                ], width=4),
+                dbc.Col([
+                    html.H3("Model Precision Plot"),
+                    self.precision.layout()
+                ])
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    html.H3("Feature Importances Plot"),
+                    self.shap_summary.layout()
+                ]),
+                dbc.Col([
+                    html.H3("Feature importances"),
+                    html.Div("On the left you can check out for yourself which parameters were the most important."),
+                    html.Div(f"{self.explainer.columns_ranked_by_shap(cats=True)[0]} was the most important"
+                             f", followed by {self.explainer.columns_ranked_by_shap(cats=True)[1]}"
+                             f" and {self.explainer.columns_ranked_by_shap(cats=True)[2]}."),
+                    html.Div("If you select 'detailed' you can see the impact of that variable on "
+                             "each individual prediction. With 'aggregate' you see the average impact size "
+                             "of that variable on the finale prediction."),
+                    html.Div("With the detailed view you can clearly see that the the large impact from Sex "
+                            "stems both from males having a much lower chance of survival and females a much "
+                            "higher chance.")
+                ], width=4)
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    html.H3("Relations between features and model output"),
+                    html.Div("In the plot to the right you can see that the higher the priace"
+                             "of the Fare that people paid, the higher the chance of survival. "
+                            "Probably the people with more expensive tickets were in higher up cabins, "
+                            "and were more likely to make it to a lifeboat."),
+                    html.Div("When you color the impacts by the PassengerClass, you can clearly see that "
+                             "the more expensive tickets were mostly 1st class, and the cheaper tickets "
+                             "mostly 3rd class."),
+                    html.Div("On the right you can check out for yourself how different features impact "
+                            "the model output."),
+                ], width=4),
+                dbc.Col([
+                    html.H3("Feature impact plot"),
+                    self.shap_dependence.layout()
+                ]),
+            ])
+        ], fluid=True)
+
+ExplainerDashboard(explainer, CustomDashboard).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="custom-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="custom-code-modal",
+                    size="xl",
+                    scrollable=False
+                ),
             ]
         ),
     ],
@@ -120,62 +319,20 @@ index_layout =  dbc.Container([
             html.H3("explainerdashboard"),
             dcc.Markdown("`explainerdashboard` is a python package that makes it easy"
                          " to quickly build an interactive dashboard that explains the inner "
-                         "workings of a machine learning model."),
-            dcc.Markdown("This allows you to open up the 'black box' and show "
-                        "customers, managers, stakeholders, regulators (and yourself) "
-                        "exactly how the machine learning algorithmn generates its predictions."),
+                         "workings of a fitted machine learning model. This allows you to "
+                         "open up the 'black box' and show customers, managers, "
+                         "stakeholders, regulators (and yourself) exactly how "
+                         "the machine learning algorithm generates its predictions."),
             dcc.Markdown("You can explore model performance, feature importances, "
-                        "feature contributions (SHAP values).", 
-                         "(partial) dependences, individual predictions, "
-                        "permutation importances and even individual decision trees "
-                        "within a random forest. All interactively. All with a minimum amount of code."),
+                        "feature contributions (SHAP values), what-if scenarios, "
+                        "(partial) dependences, feature interactions, individual predictions, "
+                        "permutation importances and even individual decision trees. "
+                        "All interactively. All with a minimum amount of code."),
             dcc.Markdown("Works with all scikit-learn compatible models, including XGBoost, Catboost and LightGBM."),
             dcc.Markdown("Due to the modular design, it is also really easy to design your "
                         "own custom dashboards, such as the custom example below."),
-            dcc.Markdown("Click on 'show code' to see all the code needed to build and "
-                         "run the classifier dashboard example below.")
         ])
     ], justify="center"),
-    dbc.Row([
-        dbc.Col([
-            dbc.Button(
-                "Show code",
-                id="collapse-button",
-                className="mb-3",
-                color="primary",
-            ),
-            dbc.Collapse(
-                html.Div([
-                dcc.Markdown(
-"""
-```python
-
-from sklearn.ensemble import RandomForestClassifier
-
-from explainerdashboard.datasets import *
-from explainerdashboard.explainers import *
-
-X_train, y_train, X_test, y_test = titanic_survive()
-train_names, test_names = titanic_names()
-
-model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
-
-explainer = RandomForestClassifierExplainer(model, X_test, y_test, 
-                               cats=['Sex', 'Deck', 'Embarked'],
-                               idxs=test_names, 
-                               descriptions=feature_descriptions,
-                               labels=['Not survived', 'Survived'])
-                               
-ExplainerDashboard(explainer).run()
-```
-"""),]),
-                
-                id="collapse",
-            ),
-            
-        ], width=8),
-        
-    ], justify="start"),
     dbc.Row([
         dbc.Col([
             html.H3("Installation"),
@@ -196,7 +353,7 @@ You can install the library with:
             dcc.Markdown(
 """
 More information can be found in the [github repo](http://github.com/oegedijk/explainerdashboard) 
-and the documentation on [readthedocs.io](http://explainerdashboard.readthedocs.io).
+and the documentation on [explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io).
 """)
         ])
     ], justify="center"),
@@ -223,3 +380,48 @@ a custom dashboard.
         ], width=4)
     ], justify="start")
 ])
+
+def register_callbacks(app):
+    @app.callback(
+        Output("clas-code-modal", "is_open"),
+        Input("clas-code-modal-open", "n_clicks"), 
+        Input("clas-code-modal-close", "n_clicks"),
+        State("clas-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output("reg-code-modal", "is_open"),
+        Input("reg-code-modal-open", "n_clicks"), 
+        Input("reg-code-modal-close", "n_clicks"),
+        State("reg-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output("multi-code-modal", "is_open"),
+        Input("multi-code-modal-open", "n_clicks"), 
+        Input("multi-code-modal-close", "n_clicks"),
+        State("multi-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output("custom-code-modal", "is_open"),
+        Input("custom-code-modal-open", "n_clicks"), 
+        Input("custom-code-modal-close", "n_clicks"),
+        State("custom-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
