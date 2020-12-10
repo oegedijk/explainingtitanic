@@ -346,7 +346,7 @@ class CustomPredictionsTab(ExplainerComponent):
 
 ExplainerDashboard(explainer, [CustomModelTab, CustomPredictionsTab], 
                         title='Titanic Explainer', header_hide_selector=True,
-                        external_stylesheets=[FLATLY]).run()
+                        bootstrap=FLATLY).run()
 ```
 """
                         ),
