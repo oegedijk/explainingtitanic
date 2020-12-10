@@ -1,7 +1,7 @@
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-from explainerdashboard import ClassifierExplainer, RegressionExplainer
+from explainerdashboard import ClassifierExplainer, RegressionExplainer, ExplainerDashboard
 from explainerdashboard.datasets import *
 
 pkl_dir = Path.cwd() / "pkls"
@@ -13,7 +13,7 @@ clas_explainer = ClassifierExplainer(model, X_test, y_test,
                                cats=['Sex', 'Deck', 'Embarked'],
                                descriptions=feature_descriptions,
                                labels=['Not survived', 'Survived'])
-clas_explainer.calculate_properties()
+_ = ExplainerDashboard(clas_explainer)
 clas_explainer.dump(pkl_dir / "clas_explainer.joblib")
 
 
@@ -24,7 +24,7 @@ reg_explainer = RegressionExplainer(model, X_test, y_test,
                                 cats=['Sex', 'Deck', 'Embarked'], 
                                 descriptions=feature_descriptions,
                                 units="$")
-reg_explainer.calculate_properties()
+_ = ExplainerDashboard(reg_explainer)
 reg_explainer.dump(pkl_dir / "reg_explainer.joblib")
 
 # multiclass
@@ -34,5 +34,5 @@ multi_explainer = ClassifierExplainer(model, X_test, y_test,
                                 cats=['Sex', 'Deck'], 
                                 descriptions=feature_descriptions,
                                 labels=['Queenstown', 'Southampton', 'Cherbourg'])
-multi_explainer.calculate_properties()
+_ = ExplainerDashboard(multi_explainer)
 multi_explainer.dump(pkl_dir / "multi_explainer.joblib")

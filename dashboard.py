@@ -38,9 +38,8 @@ multi_dashboard = ExplainerDashboard(multi_explainer,
 custom_dashboard = ExplainerDashboard(clas_explainer, 
                         [CustomModelTab, CustomPredictionsTab], 
                         title='Titanic Explainer', header_hide_selector=True,
-                        server=app,  url_base_pathname="/custom/", 
-                        external_stylesheets=[FLATLY])
-
+                        bootstrap=FLATLY,
+                        server=app,  url_base_pathname="/custom/")
 
 
 index_app = dash.Dash(
