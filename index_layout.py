@@ -258,9 +258,9 @@ class CustomModelTab(ExplainerComponent):
                 dbc.Col([
                     html.H3("Feature Importances"),
                     html.Div("On the left you can check out for yourself which parameters were the most important."),
-                    html.Div(f"Clearly {self.explainer.columns_ranked_by_shap(cats=True)[0]} was the most important"
-                            f", followed by {self.explainer.columns_ranked_by_shap(cats=True)[1]}"
-                            f" and {self.explainer.columns_ranked_by_shap(cats=True)[2]}."),
+                    html.Div(f"Clearly {self.explainer.columns_ranked_by_shap()[0]} was the most important"
+                            f", followed by {self.explainer.columns_ranked_by_shap()[1]}"
+                            f" and {self.explainer.columns_ranked_by_shap()[2]}."),
                     html.Div("If you select 'detailed' you can see the impact of that variable on "
                             "each individual prediction. With 'aggregate' you see the average impact size "
                             "of that variable on the final prediction."),
