@@ -41,6 +41,14 @@ custom_dashboard = ExplainerDashboard(clas_explainer,
                         bootstrap=FLATLY,
                         server=app,  url_base_pathname="/custom/")
 
+simple_classifier_dashboard = ExplainerDashboard(clas_explainer,
+            title="Simplified Classifier Dashboard", simple=True,
+            server=app, url_base_pathname="/simple_classifier/")
+
+simple_regression_dashboard = ExplainerDashboard(reg_explainer,
+            title="Simplified Classifier Dashboard", simple=True,
+            server=app, url_base_pathname="/simple_regression/")
+
 
 index_app = dash.Dash(
     __name__, 
@@ -71,6 +79,14 @@ def multiclass_dashboard():
 @app.route('/custom')
 def custom_dashboard():
     return custom_dashboard.app.index()
+
+@app.route('/simple_classifier')
+def simple_classifier_dashboard():
+    return simple_classifier_dashboard.app.index()
+
+@app.route('/simple_regression')
+def simple_regression_dashboard():
+    return simple_regression_dashboard.app.index()
 
 
     

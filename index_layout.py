@@ -41,11 +41,11 @@ survive_card = dbc.Card(
                 html.H4("Classifier Dashboard", className="card-title"),
                 html.P(
                     "Predicting the probability of surviving "
-                    "the titanic."
+                    "the titanic. Showing the full default dashboard."
                     ,className="card-text",
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="http://titanicexplainer.herokuapp.com/classifier"),
+                       href="/classifier"),
                 dbc.Button("Show Code", id="clas-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
@@ -91,12 +91,12 @@ ticket_card = dbc.Card(
             [
                 html.H4("Regression Dashboard", className="card-title"),
                 html.P(
-                    "Predicting the fare paid for"
-                    " a ticket on the titanic."
+                    "Predicting the fare paid for a ticket on the titanic. "
+                    "Showing the full default dashboard."
                     ,className="card-text",
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="http://titanicexplainer.herokuapp.com/regression"),
+                       href="/regression"),
                 dbc.Button("Show Code", id="reg-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
@@ -141,12 +141,12 @@ port_card = dbc.Card(
             [
                 html.H4("Multiclass Dashboard", className="card-title"),
                 html.P(
-                    "Predicting the departure port "
-                    "for passengers on the titanic."
+                    "Predicting the departure port for passengers on the titanic. "
+                    "Showing the full default dashboard."
                     ,className="card-text",
                 ),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="http://titanicexplainer.herokuapp.com/multiclass"),
+                       href="/multiclass"),
                 dbc.Button("Show Code", id="multi-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
@@ -190,17 +190,18 @@ custom_card = dbc.Card(
         dbc.CardImg(src="assets/custom.png", top=True),
         dbc.CardBody(
             [
-                html.H4("Custom Dashboard", className="card-title"),
+                html.H4("Customized Classifier Dashboard", className="card-title"),
                 html.P(
-                    "Showing a custom design for a classifier dashboard."
+                    "You can also completely customize the layout and elements of your "
+                    "dashboard using a low-code approach."
                     ,className="card-text",
                 ),
-                dbc.CardLink("Source code", 
-                    href="https://github.com/oegedijk/explainingtitanic/blob/master/custom.py", 
-                    target="_blank"),
+                # dbc.CardLink("Source code", 
+                #     href="https://github.com/oegedijk/explainingtitanic/blob/master/custom.py", 
+                #     target="_blank"),
                 html.P(),
                 html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="http://titanicexplainer.herokuapp.com/custom"),
+                       href="/custom"),
                 dbc.Button("Show Code", id="custom-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
@@ -358,8 +359,109 @@ ExplainerDashboard(explainer, [CustomModelTab, CustomPredictionsTab],
     style={"width": "18rem"},
 )
 
+simple_survive_card = dbc.Card(
+    [
+        dbc.CardImg(src="assets/titanic.jpeg", top=True),
+        dbc.CardBody(
+            [
+                html.H4("Simplified Classifier Dashboard", className="card-title"),
+                html.P(
+                    "You can generate a simplified single page dashboard "
+                    "by passing simple=True to ExplainerDashboard." 
+                    ,className="card-text",
+                ),
+                html.A(dbc.Button("Go to dashboard", color="primary"),
+                       href="/simple_classifier"),
+                dbc.Button("Show Code", id="simple-clas-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Classifier Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+
+from sklearn.ensemble import RandomForestClassifier
+
+from explainerdashboard import ClassifierExplainer, ExplainerDashboard
+from explainerdashboard.datasets import titanic_survive, feature_descriptions
+
+X_train, y_train, X_test, y_test = titanic_survive()
+model = RandomForestClassifier(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
+explainer = ClassifierExplainer(model, X_test, y_test, 
+                               cats=['Sex', 'Deck', 'Embarked'],
+                               descriptions=feature_descriptions,
+                               labels=['Not survived', 'Survived'])
+                               
+ExplainerDashboard(explainer, title="Simplified Classifier Dashboard", simple=True).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="simple-clas-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="simple-clas-code-modal",
+                    size="lg",
+                ),
+            ]
+        ),
+    ],
+    style={"width": "18rem"},
+)
+
+simple_ticket_card = dbc.Card(
+    [
+        dbc.CardImg(src="assets/ticket.jpeg", top=True),
+        dbc.CardBody(
+            [
+                html.H4("Simplified Regression Dashboard", className="card-title"),
+                html.P(
+                    "You can generate a simplified single page dashboard "
+                    "by passing simple=True to ExplainerDashboard." 
+                    ,className="card-text",
+                ),
+                html.A(dbc.Button("Go to dashboard", color="primary"),
+                       href="/simple_regression"),
+                dbc.Button("Show Code", id="simple-reg-code-modal-open", className="mr-1"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Code needed for this Regression Dashboard"),
+                        dcc.Markdown(
+"""
+```python
+from sklearn.ensemble import RandomForestRegressor
+
+from explainerdashboard import RegressionExplainer, ExplainerDashboard
+from explainerdashboard.datasets import titanic_fare, feature_descriptions
+
+X_train, y_train, X_test, y_test = titanic_fare()
+model = RandomForestRegressor(n_estimators=50, max_depth=10).fit(X_train, y_train)
+
+explainer = RegressionExplainer(model, X_test, y_test, 
+                                cats=['Sex', 'Deck', 'Embarked'], 
+                                descriptions=feature_descriptions,
+                                units="$")
+                               
+ExplainerDashboard(explainer, title="Simplified Regression Dashboard", simple=True).run()
+```
+"""
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Close", id="simple-reg-code-modal-close", className="ml-auto")
+                        ),
+                    ],
+                    id="simple-reg-code-modal",
+                    size="lg",
+                ),
+            ]
+        ),
+    ],
+    style={"width": "18rem"},
+)
+
 default_cards = dbc.CardDeck([survive_card, ticket_card, port_card])
-custom_cards = dbc.CardDeck([custom_card])
+custom_cards = dbc.CardDeck([simple_survive_card, simple_ticket_card, custom_card])
 
 index_layout =  dbc.Container([
     navbar,     
@@ -432,7 +534,7 @@ a custom dashboard.
     dbc.Row([
         dbc.Col([
             custom_cards
-        ], width=4)
+        ])
     ], justify="start")
 ])
 
@@ -475,6 +577,28 @@ def register_callbacks(app):
         Input("custom-code-modal-open", "n_clicks"), 
         Input("custom-code-modal-close", "n_clicks"),
         State("custom-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output("simple-clas-code-modal", "is_open"),
+        Input("simple-clas-code-modal-open", "n_clicks"), 
+        Input("simple-clas-code-modal-close", "n_clicks"),
+        State("simple-clas-code-modal", "is_open"),
+    )
+    def toggle_modal(click_open, click_close, is_open):
+        if click_open or click_close:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output("simple-reg-code-modal", "is_open"),
+        Input("simple-reg-code-modal-open", "n_clicks"), 
+        Input("simple-reg-code-modal-close", "n_clicks"),
+        State("simple-reg-code-modal", "is_open"),
     )
     def toggle_modal(click_open, click_close, is_open):
         if click_open or click_close:
