@@ -8,7 +8,9 @@ navbar = dbc.NavbarSimple(
     children=[
         dbc.DropdownMenu(
             children=[
-                dbc.DropdownMenuItem("github", href="https://github.com/oegedijk/explainingtitanic"),
+                dbc.DropdownMenuItem(
+                    "github", href="https://github.com/oegedijk/explainingtitanic"
+                ),
             ],
             nav=True,
             in_navbar=True,
@@ -16,15 +18,21 @@ navbar = dbc.NavbarSimple(
         ),
         dbc.DropdownMenu(
             children=[
-                dbc.DropdownMenuItem("github", href="https://github.com/oegedijk/explainerdashboard"),
-                dbc.DropdownMenuItem("readthedocs", href="http://explainerdashboard.readthedocs.io/en/latest/"),
-                dbc.DropdownMenuItem("pypi", href="https://pypi.org/project/explainerdashboard/"),
+                dbc.DropdownMenuItem(
+                    "github", href="https://github.com/oegedijk/explainerdashboard"
+                ),
+                dbc.DropdownMenuItem(
+                    "readthedocs",
+                    href="http://explainerdashboard.readthedocs.io/en/latest/",
+                ),
+                dbc.DropdownMenuItem(
+                    "pypi", href="https://pypi.org/project/explainerdashboard/"
+                ),
             ],
             nav=True,
             in_navbar=True,
             label="explainerdashboard",
         ),
-        
     ],
     brand="Titanic Explainer",
     brand_href="https://github.com/oegedijk/explainingtitanic",
@@ -41,17 +49,18 @@ survive_card = dbc.Card(
                 html.H4("Classifier Dashboard", className="card-title"),
                 html.P(
                     "Predicting the probability of surviving "
-                    "the titanic. Showing the full default dashboard."
-                    ,className="card-text",
+                    "the titanic. Showing the full default dashboard.",
+                    className="card-text",
                 ),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/classifier"),
+                html.A(
+                    dbc.Button("Go to dashboard", color="primary"), href="/classifier"
+                ),
                 dbc.Button("Show Code", id="clas-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Code needed for this Classifier Dashboard"),
                         dcc.Markdown(
-"""
+                            """
 ```python
 
 from sklearn.ensemble import RandomForestClassifier
@@ -72,7 +81,9 @@ ExplainerDashboard(explainer).run()
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="clas-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close", id="clas-code-modal-close", className="ml-auto"
+                            )
                         ),
                     ],
                     id="clas-code-modal",
@@ -92,17 +103,18 @@ ticket_card = dbc.Card(
                 html.H4("Regression Dashboard", className="card-title"),
                 html.P(
                     "Predicting the fare paid for a ticket on the titanic. "
-                    "Showing the full default dashboard."
-                    ,className="card-text",
+                    "Showing the full default dashboard.",
+                    className="card-text",
                 ),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/regression"),
+                html.A(
+                    dbc.Button("Go to dashboard", color="primary"), href="/regression"
+                ),
                 dbc.Button("Show Code", id="reg-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Code needed for this Regression Dashboard"),
                         dcc.Markdown(
-"""
+                            """
 ```python
 from sklearn.ensemble import RandomForestRegressor
 
@@ -122,7 +134,9 @@ ExplainerDashboard(explainer).run()
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="reg-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close", id="reg-code-modal-close", className="ml-auto"
+                            )
                         ),
                     ],
                     id="reg-code-modal",
@@ -142,17 +156,20 @@ port_card = dbc.Card(
                 html.H4("Multiclass Dashboard", className="card-title"),
                 html.P(
                     "Predicting the departure port for passengers on the titanic. "
-                    "Showing the full default dashboard."
-                    ,className="card-text",
+                    "Showing the full default dashboard.",
+                    className="card-text",
                 ),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/multiclass"),
+                html.A(
+                    dbc.Button("Go to dashboard", color="primary"), href="/multiclass"
+                ),
                 dbc.Button("Show Code", id="multi-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
-                        dbc.ModalHeader("Code needed for this Multi Classifier Dashboard"),
+                        dbc.ModalHeader(
+                            "Code needed for this Multi Classifier Dashboard"
+                        ),
                         dcc.Markdown(
-"""
+                            """
 ```python
 
 from sklearn.ensemble import RandomForestClassifier
@@ -173,7 +190,11 @@ ExplainerDashboard(explainer).run()
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="multi-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close",
+                                id="multi-code-modal-close",
+                                className="ml-auto",
+                            )
                         ),
                     ],
                     id="multi-code-modal",
@@ -193,21 +214,20 @@ custom_card = dbc.Card(
                 html.H4("Customized Classifier Dashboard", className="card-title"),
                 html.P(
                     "You can also completely customize the layout and elements of your "
-                    "dashboard using a low-code approach."
-                    ,className="card-text",
+                    "dashboard using a low-code approach.",
+                    className="card-text",
                 ),
-                # dbc.CardLink("Source code", 
-                #     href="https://github.com/oegedijk/explainingtitanic/blob/master/custom.py", 
+                # dbc.CardLink("Source code",
+                #     href="https://github.com/oegedijk/explainingtitanic/blob/master/custom.py",
                 #     target="_blank"),
                 html.P(),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/custom"),
+                html.A(dbc.Button("Go to dashboard", color="primary"), href="/custom"),
                 dbc.Button("Show Code", id="custom-code-modal-open", className="mr-1"),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Code needed for this Custom Dashboard"),
                         dcc.Markdown(
-"""
+                            """
 ```python
 from explainerdashboard import ExplainerDashboard
 from explainerdashboard.custom import *
@@ -346,12 +366,16 @@ ExplainerDashboard(explainer, [CustomModelTab, CustomPredictionsTab],
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="custom-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close",
+                                id="custom-code-modal-close",
+                                className="ml-auto",
+                            )
                         ),
                     ],
                     id="custom-code-modal",
                     size="xl",
-                    scrollable=False
+                    scrollable=False,
                 ),
             ]
         ),
@@ -367,17 +391,21 @@ simple_survive_card = dbc.Card(
                 html.H4("Simplified Classifier Dashboard", className="card-title"),
                 html.P(
                     "You can generate a simplified single page dashboard "
-                    "by passing simple=True to ExplainerDashboard." 
-                    ,className="card-text",
+                    "by passing simple=True to ExplainerDashboard.",
+                    className="card-text",
                 ),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/simple_classifier"),
-                dbc.Button("Show Code", id="simple-clas-code-modal-open", className="mr-1"),
+                html.A(
+                    dbc.Button("Go to dashboard", color="primary"),
+                    href="/simple_classifier",
+                ),
+                dbc.Button(
+                    "Show Code", id="simple-clas-code-modal-open", className="mr-1"
+                ),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Code needed for this Classifier Dashboard"),
                         dcc.Markdown(
-"""
+                            """
 ```python
 
 from sklearn.ensemble import RandomForestClassifier
@@ -398,7 +426,11 @@ ExplainerDashboard(explainer, title="Simplified Classifier Dashboard", simple=Tr
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="simple-clas-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close",
+                                id="simple-clas-code-modal-close",
+                                className="ml-auto",
+                            )
                         ),
                     ],
                     id="simple-clas-code-modal",
@@ -418,17 +450,21 @@ simple_ticket_card = dbc.Card(
                 html.H4("Simplified Regression Dashboard", className="card-title"),
                 html.P(
                     "You can generate a simplified single page dashboard "
-                    "by passing simple=True to ExplainerDashboard." 
-                    ,className="card-text",
+                    "by passing simple=True to ExplainerDashboard.",
+                    className="card-text",
                 ),
-                html.A(dbc.Button("Go to dashboard", color="primary"),
-                       href="/simple_regression"),
-                dbc.Button("Show Code", id="simple-reg-code-modal-open", className="mr-1"),
+                html.A(
+                    dbc.Button("Go to dashboard", color="primary"),
+                    href="/simple_regression",
+                ),
+                dbc.Button(
+                    "Show Code", id="simple-reg-code-modal-open", className="mr-1"
+                ),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Code needed for this Regression Dashboard"),
                         dcc.Markdown(
-"""
+                            """
 ```python
 from sklearn.ensemble import RandomForestRegressor
 
@@ -448,7 +484,11 @@ ExplainerDashboard(explainer, title="Simplified Regression Dashboard", simple=Tr
 """
                         ),
                         dbc.ModalFooter(
-                            dbc.Button("Close", id="simple-reg-code-modal-close", className="ml-auto")
+                            dbc.Button(
+                                "Close",
+                                id="simple-reg-code-modal-close",
+                                className="ml-auto",
+                            )
                         ),
                     ],
                     id="simple-reg-code-modal",
@@ -460,35 +500,66 @@ ExplainerDashboard(explainer, title="Simplified Regression Dashboard", simple=Tr
     style={"width": "18rem"},
 )
 
-default_cards = dbc.CardDeck([survive_card, ticket_card, port_card])
-custom_cards = dbc.CardDeck([simple_survive_card, simple_ticket_card, custom_card])
+default_cards = dbc.Row(
+    [
+        dbc.Col(survive_card, width=12, md=4, className="mb-4"),
+        dbc.Col(ticket_card, width=12, md=4, className="mb-4"),
+        dbc.Col(port_card, width=12, md=4, className="mb-4"),
+    ],
+    className="g-4",
+)
 
-index_layout =  dbc.Container([
-    navbar,     
-    dbc.Row([
-        dbc.Col([
-            html.H3("explainerdashboard"),
-            dcc.Markdown("`explainerdashboard` is a python package that makes it easy"
-                         " to quickly build an interactive dashboard that explains the inner "
-                         "workings of a fitted machine learning model. This allows you to "
-                         "open up the 'black box' and show customers, managers, "
-                         "stakeholders, regulators (and yourself) exactly how "
-                         "the machine learning algorithm generates its predictions."),
-            dcc.Markdown("You can explore model performance, feature importances, "
-                        "feature contributions (SHAP values), what-if scenarios, "
-                        "(partial) dependences, feature interactions, individual predictions, "
-                        "permutation importances and even individual decision trees. "
-                        "All interactively. All with a minimum amount of code."),
-            dcc.Markdown("Works with all scikit-learn compatible models, including XGBoost, Catboost and LightGBM."),
-            dcc.Markdown("Due to the modular design, it is also really easy to design your "
-                        "own custom dashboards, such as the custom example below."),
-        ])
-    ], justify="center"),
-    dbc.Row([
-        dbc.Col([
-            html.H3("Installation"),
-            dcc.Markdown(
-"""
+custom_cards = dbc.Row(
+    [
+        dbc.Col(simple_survive_card, width=12, md=4, className="mb-4"),
+        dbc.Col(simple_ticket_card, width=12, md=4, className="mb-4"),
+        dbc.Col(custom_card, width=12, md=4, className="mb-4"),
+    ],
+    className="g-4",
+)
+
+index_layout = dbc.Container(
+    [
+        navbar,
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.H3("explainerdashboard"),
+                        dcc.Markdown(
+                            "`explainerdashboard` is a python package that makes it easy"
+                            " to quickly build an interactive dashboard that explains the inner "
+                            "workings of a fitted machine learning model. This allows you to "
+                            "open up the 'black box' and show customers, managers, "
+                            "stakeholders, regulators (and yourself) exactly how "
+                            "the machine learning algorithm generates its predictions."
+                        ),
+                        dcc.Markdown(
+                            "You can explore model performance, feature importances, "
+                            "feature contributions (SHAP values), what-if scenarios, "
+                            "(partial) dependences, feature interactions, individual predictions, "
+                            "permutation importances and even individual decision trees. "
+                            "All interactively. All with a minimum amount of code."
+                        ),
+                        dcc.Markdown(
+                            "Works with all scikit-learn compatible models, including XGBoost, Catboost and LightGBM."
+                        ),
+                        dcc.Markdown(
+                            "Due to the modular design, it is also really easy to design your "
+                            "own custom dashboards, such as the custom example below."
+                        ),
+                    ]
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.H3("Installation"),
+                        dcc.Markdown(
+                            """
 You can install the library with:
 
 ```
@@ -501,47 +572,61 @@ or:
     conda install -c conda-forge explainerdashboard
 ```
 
-""")
-        ])
-    ], justify="center"),
-    
-    dbc.Row([
-        dbc.Col([
-            dcc.Markdown(
 """
+                        ),
+                    ]
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dcc.Markdown(
+                            """
 More information can be found in the [github repo](http://github.com/oegedijk/explainerdashboard) 
 and the documentation on [explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io).
-""")
-        ])
-    ], justify="center"),
-    
-    dbc.Row([
-        dbc.Col([
-            html.H3("Examples"),
-            dcc.Markdown("""
+"""
+                        )
+                    ]
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.H3("Examples"),
+                        dcc.Markdown("""
 Below you can find demonstrations of the three default dashboards for classification, 
 regression and multi class classification problems, plus one demonstration of 
 a custom dashboard.
 """),
-        ])
-    ], justify="center"),
-    
-    dbc.Row([
-        dbc.Col([
-            default_cards,
-        ]),
-    ]),
-    dbc.Row([
-        dbc.Col([
-            custom_cards
-        ])
-    ], justify="start")
-])
+                    ]
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        default_cards,
+                    ]
+                ),
+            ]
+        ),
+        dbc.Row([dbc.Col([custom_cards])], justify="start"),
+    ]
+)
+
 
 def register_callbacks(app):
     @app.callback(
         Output("clas-code-modal", "is_open"),
-        Input("clas-code-modal-open", "n_clicks"), 
+        Input("clas-code-modal-open", "n_clicks"),
         Input("clas-code-modal-close", "n_clicks"),
         State("clas-code-modal", "is_open"),
     )
@@ -552,7 +637,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("reg-code-modal", "is_open"),
-        Input("reg-code-modal-open", "n_clicks"), 
+        Input("reg-code-modal-open", "n_clicks"),
         Input("reg-code-modal-close", "n_clicks"),
         State("reg-code-modal", "is_open"),
     )
@@ -563,7 +648,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("multi-code-modal", "is_open"),
-        Input("multi-code-modal-open", "n_clicks"), 
+        Input("multi-code-modal-open", "n_clicks"),
         Input("multi-code-modal-close", "n_clicks"),
         State("multi-code-modal", "is_open"),
     )
@@ -574,7 +659,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("custom-code-modal", "is_open"),
-        Input("custom-code-modal-open", "n_clicks"), 
+        Input("custom-code-modal-open", "n_clicks"),
         Input("custom-code-modal-close", "n_clicks"),
         State("custom-code-modal", "is_open"),
     )
@@ -585,7 +670,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("simple-clas-code-modal", "is_open"),
-        Input("simple-clas-code-modal-open", "n_clicks"), 
+        Input("simple-clas-code-modal-open", "n_clicks"),
         Input("simple-clas-code-modal-close", "n_clicks"),
         State("simple-clas-code-modal", "is_open"),
     )
@@ -596,7 +681,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("simple-reg-code-modal", "is_open"),
-        Input("simple-reg-code-modal-open", "n_clicks"), 
+        Input("simple-reg-code-modal-open", "n_clicks"),
         Input("simple-reg-code-modal-close", "n_clicks"),
         State("simple-reg-code-modal", "is_open"),
     )
