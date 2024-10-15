@@ -31,5 +31,7 @@ Example [notebook](http://www.github.com/oegedijk/explainerdashboard/dashboard_e
 ## Heroku deployment 
 
 Deployed at [titanicexplainer.herokuapp.com](http://titanicexplainer.herokuapp.com)
+ 
+Automatically deploys with each commit or merge to master.
 
 
