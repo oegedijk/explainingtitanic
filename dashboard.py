@@ -1,92 +1,178 @@
-
 # xgboost is a dependency of dtreeviz, but too large (>350M) for heroku
 # so we uninstall it and mock it here:
+from functools import lru_cache
+from pathlib import Path
+from threading import Lock
 from unittest.mock import MagicMock
 import sys
-sys.modules["xgboost"] = MagicMock()
 
-from pathlib import Path
-from flask import Flask
+from flask import Flask, redirect
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-import dash
-from dash_bootstrap_components.themes import FLATLY, BOOTSTRAP # bootstrap theme
-from explainerdashboard import *
+from dash_bootstrap_components.themes import FLATLY
+from explainerdashboard import ClassifierExplainer, ExplainerDashboard, RegressionExplainer
 
-from index_layout import index_layout, register_callbacks
 from custom import CustomModelTab, CustomPredictionsTab
+
+sys.modules["xgboost"] = MagicMock()
 
 pkl_dir = Path.cwd() / "pkls"
 
-app = Flask(__name__)
-
-clas_explainer = ClassifierExplainer.from_file(pkl_dir / "clas_explainer.joblib")
-clas_dashboard = ExplainerDashboard(clas_explainer, 
-                    title="Classifier Explainer: Predicting survival on the Titanic", 
-                    server=app, url_base_pathname="/classifier/", 
-                    header_hide_selector=True)
-
-reg_explainer = RegressionExplainer.from_file(pkl_dir / "reg_explainer.joblib")
-reg_dashboard = ExplainerDashboard(reg_explainer, 
-                    title="Regression Explainer: Predicting ticket fare",
-                    server=app, url_base_pathname="/regression/")
-
-multi_explainer = ClassifierExplainer.from_file(pkl_dir / "multi_explainer.joblib")
-multi_dashboard = ExplainerDashboard(multi_explainer, 
-                    title="Multiclass Explainer: Predicting departure port",
-                    server=app, url_base_pathname="/multiclass/")
-
-custom_dashboard = ExplainerDashboard(clas_explainer, 
-                        [CustomModelTab, CustomPredictionsTab], 
-                        title='Titanic Explainer', header_hide_selector=True,
-                        bootstrap=FLATLY,
-                        server=app,  url_base_pathname="/custom/")
-
-simple_classifier_dashboard = ExplainerDashboard(clas_explainer,
-            title="Simplified Classifier Dashboard", simple=True,
-            server=app, url_base_pathname="/simple_classifier/")
-
-simple_regression_dashboard = ExplainerDashboard(reg_explainer,
-            title="Simplified Classifier Dashboard", simple=True,
-            server=app, url_base_pathname="/simple_regression/")
+base_app = Flask(__name__)
 
 
-index_app = dash.Dash(
-    __name__, 
-    server=app, 
-    url_base_pathname="/", 
-    external_stylesheets=[BOOTSTRAP])
+@base_app.route("/healthz")
+def healthz():
+    return "ok", 200
 
-index_app.title = 'explainerdashboard'
-index_app.layout = index_layout
-register_callbacks(index_app)
 
-@app.route("/")
+@base_app.route("/")
 def index():
-    return index_app.index()
-
-@app.route('/classifier')
-def classifier_dashboard():
-    return clas_dashboard.app.index()
-
-@app.route('/regression')
-def regression_dashboard():
-    return reg_dashboard.app.index()
-
-@app.route('/multiclass')
-def multiclass_dashboard():
-    return multi_dashboard.app.index()
-
-@app.route('/custom')
-def custom_dashboard():
-    return custom_dashboard.app.index()
-
-@app.route('/simple_classifier')
-def simple_classifier_dashboard():
-    return simple_classifier_dashboard.app.index()
-
-@app.route('/simple_regression')
-def simple_regression_dashboard():
-    return simple_regression_dashboard.app.index()
+    return """
+    <html>
+      <head><title>explainingtitanic</title></head>
+      <body>
+        <h1>Titanic Explainer Demo</h1>
+        <ul>
+          <li><a href="/classifier/">Classifier Dashboard</a></li>
+          <li><a href="/regression/">Regression Dashboard</a></li>
+          <li><a href="/multiclass/">Multiclass Dashboard</a></li>
+          <li><a href="/custom/">Custom Dashboard</a></li>
+          <li><a href="/simple_classifier/">Simple Classifier Dashboard</a></li>
+          <li><a href="/simple_regression/">Simple Regression Dashboard</a></li>
+        </ul>
+      </body>
+    </html>
+    """
 
 
-    
+@base_app.route("/classifier")
+def classifier_redirect():
+    return redirect("/classifier/", code=302)
+
+
+@base_app.route("/regression")
+def regression_redirect():
+    return redirect("/regression/", code=302)
+
+
+@base_app.route("/multiclass")
+def multiclass_redirect():
+    return redirect("/multiclass/", code=302)
+
+
+@base_app.route("/custom")
+def custom_redirect():
+    return redirect("/custom/", code=302)
+
+
+@base_app.route("/simple_classifier")
+def simple_classifier_redirect():
+    return redirect("/simple_classifier/", code=302)
+
+
+@base_app.route("/simple_regression")
+def simple_regression_redirect():
+    return redirect("/simple_regression/", code=302)
+
+
+@lru_cache(maxsize=1)
+def _classifier_explainer():
+    return ClassifierExplainer.from_file(pkl_dir / "clas_explainer.joblib")
+
+
+@lru_cache(maxsize=1)
+def _regression_explainer():
+    return RegressionExplainer.from_file(pkl_dir / "reg_explainer.joblib")
+
+
+@lru_cache(maxsize=1)
+def _multiclass_explainer():
+    return ClassifierExplainer.from_file(pkl_dir / "multi_explainer.joblib")
+
+
+def _build_classifier_app():
+    dashboard = ExplainerDashboard(
+        _classifier_explainer(),
+        title="Classifier Explainer: Predicting survival on the Titanic",
+        url_base_pathname="/",
+        header_hide_selector=True,
+    )
+    return dashboard.app.server
+
+
+def _build_regression_app():
+    dashboard = ExplainerDashboard(
+        _regression_explainer(),
+        title="Regression Explainer: Predicting ticket fare",
+        url_base_pathname="/",
+    )
+    return dashboard.app.server
+
+
+def _build_multiclass_app():
+    dashboard = ExplainerDashboard(
+        _multiclass_explainer(),
+        title="Multiclass Explainer: Predicting departure port",
+        url_base_pathname="/",
+    )
+    return dashboard.app.server
+
+
+def _build_custom_app():
+    dashboard = ExplainerDashboard(
+        _classifier_explainer(),
+        [CustomModelTab, CustomPredictionsTab],
+        title="Titanic Explainer",
+        header_hide_selector=True,
+        bootstrap=FLATLY,
+        url_base_pathname="/",
+    )
+    return dashboard.app.server
+
+
+def _build_simple_classifier_app():
+    dashboard = ExplainerDashboard(
+        _classifier_explainer(),
+        title="Simplified Classifier Dashboard",
+        simple=True,
+        url_base_pathname="/",
+    )
+    return dashboard.app.server
+
+
+def _build_simple_regression_app():
+    dashboard = ExplainerDashboard(
+        _regression_explainer(),
+        title="Simplified Regression Dashboard",
+        simple=True,
+        url_base_pathname="/",
+    )
+    return dashboard.app.server
+
+
+class LazyWSGIApp:
+    def __init__(self, factory):
+        self._factory = factory
+        self._app = None
+        self._lock = Lock()
+
+    def __call__(self, environ, start_response):
+        if self._app is None:
+            with self._lock:
+                if self._app is None:
+                    self._app = self._factory()
+        return self._app(environ, start_response)
+
+
+app = DispatcherMiddleware(
+    base_app,
+    {
+        "/classifier": LazyWSGIApp(_build_classifier_app),
+        "/regression": LazyWSGIApp(_build_regression_app),
+        "/multiclass": LazyWSGIApp(_build_multiclass_app),
+        "/custom": LazyWSGIApp(_build_custom_app),
+        "/simple_classifier": LazyWSGIApp(_build_simple_classifier_app),
+        "/simple_regression": LazyWSGIApp(_build_simple_regression_app),
+    },
+)

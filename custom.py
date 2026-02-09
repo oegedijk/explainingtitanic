@@ -1,9 +1,11 @@
 from explainerdashboard.custom import *
+from dash import html
+import dash_bootstrap_components as dbc
 
 
 class CustomModelTab(ExplainerComponent):
-    def __init__(self, explainer):
-        super().__init__(explainer, title="Model Summary", name=None)
+    def __init__(self, explainer, name=None):
+        super().__init__(explainer, title="Model Summary", name=name)
         self.precision = PrecisionComponent(explainer,
                                 title='Precision',
                                 hide_subtitle=True, hide_footer=True,
@@ -78,8 +80,8 @@ class CustomModelTab(ExplainerComponent):
         ])
 
 class CustomPredictionsTab(ExplainerComponent):
-    def __init__(self, explainer):
-        super().__init__(explainer, title="Predictions", name=None)
+    def __init__(self, explainer, name=None):
+        super().__init__(explainer, title="Predictions", name=name)
 
         self.index = ClassifierRandomIndexComponent(explainer,
                                                     hide_title=True, hide_index=False,

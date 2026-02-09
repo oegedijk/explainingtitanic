@@ -1,5 +1,3 @@
-explainerdashboard==0.4.7
-pandas>=1.3.0
-joblib
+explainerdashboard==0.5.8
+scikit-learn>=1.8,<2.0
 gunicorn
-requests
