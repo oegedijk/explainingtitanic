@@ -27,7 +27,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Push master to Hugging Face Space main
+      - name: Push snapshot to Hugging Face Space main
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -36,5 +36,26 @@ jobs:
             exit 1
           fi
 
-          git remote add hf "https://oegedijk:${HF_TOKEN}@huggingface.co/spaces/oegedijk/explainingtitanic"
-          git push hf HEAD:main
+          HF_URL="https://oegedijk:${HF_TOKEN}@huggingface.co/spaces/oegedijk/explainingtitanic"
+          SRC_DIR="$PWD"
+          TMP_DIR="$(mktemp -d)"
+
+          git clone "$HF_URL" "$TMP_DIR/space"
+          cd "$TMP_DIR/space"
+
+          git lfs install
+
+          # Mirror the current repository state into the Space repo without
+          # carrying over source-history blobs that HF blocks (>10 MiB).
+          rsync -a --delete --exclude '.git' "$SRC_DIR/" "$TMP_DIR/space/"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to push to Hugging Face Space."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sync from GitHub master (${GITHUB_SHA})"
+          git push origin main
