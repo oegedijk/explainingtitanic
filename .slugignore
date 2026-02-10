@@ -1,1 +1,7 @@
 uv.lock
+Dockerfile
+.dockerignore
+fly.toml
+FLY_DEPLOY.md
+justfile
+pyproject.toml
