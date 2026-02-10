@@ -17,6 +17,13 @@ Demonstration of the [explainerdashboard](https://github.com/oegedijk/explainerd
 
 This Dash app showcases model quality, permutation importances, SHAP values and interactions, individual trees, and multiple dashboard variants for sklearn-compatible models.
 
+## Live demos
+
+- Heroku: https://titanicexplainer.herokuapp.com
+- Fly.io (public proxy): https://titanicexplainer.fly.dev
+- Fly.io (backend app): https://explainingtitanic.fly.dev
+- Hugging Face Space: https://huggingface.co/spaces/oegedijk/explainingtitanic
+
 ## ExplainerDashboard docs
 
 - Docs: https://explainerdashboard.readthedocs.io
