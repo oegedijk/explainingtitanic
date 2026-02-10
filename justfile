@@ -19,7 +19,7 @@ docker-build:
   docker build -t explainingtitanic:fly .
 
 docker-run:
-  docker run --rm -p 8080:8080 explainingtitanic:fly
+  docker run --rm -p 7860:7860 explainingtitanic:fly
 
 fly-launch:
   fly launch --no-deploy

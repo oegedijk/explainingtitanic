@@ -2,11 +2,11 @@
 name = "explainingtitanic"
 version = "0.1.0"
 description = "Demo app for explainerdashboard with Titanic models."
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.10,<3.13"
 dependencies = [
   "explainerdashboard==0.5.8",
-  "scikit-learn>=1.8,<2.0",
-  "gunicorn",
+  "scikit-learn==1.7.2",
+  "gunicorn==23.0.0",
 ]
 
 [tool.uv]

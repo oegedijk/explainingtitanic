@@ -1,37 +1,65 @@
+---
+title: Explaining Titanic
+emoji: "🚢"
+short_description: Public multi-page ExplainerDashboard demo on Titanic models.
+sdk: docker
+app_port: 7860
+tags:
+  - python
+  - docker
+  - dash
+  - explainable-ai
+---
+
 # explainingtitanic
-Demonstration of [explainerdashboard](http://www.github.com/oegedijk/explainerdashboard) package. 
 
-A Dash dashboard app that that displays model quality, permutation importances, SHAP values and interactions, and individual trees for sklearn compatible models.
+Demonstration of the [explainerdashboard](https://github.com/oegedijk/explainerdashboard) package.
 
-## Installation
-install with `pip install explainerdashoard`
+This Dash app showcases model quality, permutation importances, SHAP values and interactions, individual trees, and multiple dashboard variants for sklearn-compatible models.
 
-## Github
+## ExplainerDashboard docs
 
-[www.github.com/oegedijk/explainerdashboard](http://www.github.com/oegedijk/explainerdashboard)
+- Docs: https://explainerdashboard.readthedocs.io
+- Example notebook: https://github.com/oegedijk/explainerdashboard/blob/master/dashboard_examples.ipynb
 
-## graphviz buildpack
+## Local run
 
-In order to enable graphviz on heroku enable the following buildpack:
+With `uv`:
 
-[https://github.com/weibeld/heroku-buildpack-graphviz.git](https://github.com/weibeld/heroku-buildpack-graphviz.git)
+```bash
+uv sync
+uv run gunicorn --bind 0.0.0.0:7860 dashboard:app
+```
 
-## uninstallng xgboost
+Then open `http://localhost:7860`.
 
-dtreeviz comes with a xgboost dependency that takes a lot of space, making your slug size >500MB.
-To uninstall it, first enable the shell buildpack: https://github.com/niteoweb/heroku-buildpack-shell.git
+## Hugging Face Spaces (Docker)
 
-and then add `pip uninstall -y xgboost` to `.heroku/run.sh` 
-## Documentation
+This repository is configured to run directly as a Hugging Face Docker Space.
 
-[explainerdashboard.readthedocs.io](http://explainerdashboard.readthedocs.io).
+- Runtime port: `7860`
+- Entrypoint: `gunicorn dashboard:app`
+- Health endpoint: `/healthz`
 
-Example [notebook](http://www.github.com/oegedijk/explainerdashboard/dashboard_examples.ipynb).
+If you duplicate this repo into a Space, set SDK to Docker and deploy.
 
-## Heroku deployment 
+## Artifact strategy
 
-Deployed at [titanicexplainer.herokuapp.com](http://titanicexplainer.herokuapp.com)
- 
-Automatically deploys with each commit or merge to master.
+This demo commits prebuilt explainer artifacts in `pkls/*.joblib` (about 8 MB total).
 
+Why this choice:
+- Faster and more reliable cold starts on free CPU Spaces.
+- No extra model-building step during container startup.
+
+Tradeoff:
+- If model or sklearn versions change, regenerate artifacts with:
+
+```bash
+uv run python generate_explainers.py
+```
+
+## Other deployment targets
+
+- Fly.io: see `FLY_DEPLOY.md`.
+- Heroku compatibility remains via `Procfile` and `.heroku/run.sh`.
 
