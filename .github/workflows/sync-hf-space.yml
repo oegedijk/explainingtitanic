@@ -49,7 +49,13 @@ jobs:
           # carrying over source-history blobs that HF blocks (>10 MiB).
           rsync -a --delete --exclude '.git' "$SRC_DIR/" "$TMP_DIR/space/"
 
+          # HF Space rejects raw binary blobs; store model artifacts as LFS.
+          git lfs track "*.joblib"
+
           git add -A
+          if ls pkls/*.joblib >/dev/null 2>&1; then
+            git add --renormalize pkls/*.joblib
+          fi
           if git diff --cached --quiet; then
             echo "No changes to push to Hugging Face Space."
             exit 0
