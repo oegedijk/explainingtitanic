@@ -177,3 +177,19 @@ just fly-logs
 just fly-status
 just fly-scale-1gb
 ```
+
+## 11) Optional warmup proxy app
+
+To serve a quick "waking up" page while the main app is suspended, deploy the `proxy/` app:
+
+```bash
+cd proxy
+fly launch --no-deploy --name titanicexplainer --copy-config
+fly deploy
+fly open
+```
+
+Behavior:
+- `https://titanicexplainer.fly.dev` proxies to `https://explainingtitanic.fly.dev`.
+- If backend is cold/unreachable, users see a warmup page that auto-retries.
+- Proxy app is configured as tiny always-on (`shared-cpu-1x`, `256MB`) for fast first paint.
