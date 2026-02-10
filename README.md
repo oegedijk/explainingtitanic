@@ -62,4 +62,3 @@ uv run python generate_explainers.py
 
 - Fly.io: see `FLY_DEPLOY.md`.
 - Heroku compatibility remains via `Procfile` and `.heroku/run.sh`.
-
