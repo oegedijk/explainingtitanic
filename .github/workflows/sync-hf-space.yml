@@ -1,0 +1,39 @@
+name: Sync Hugging Face Space
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Ensure Git LFS is available
+        run: |
+          git lfs install
+          git lfs pull
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Push master to Hugging Face Space main
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN secret is not set."
+            exit 1
+          fi
+
+          git remote add hf "https://oegedijk:${HF_TOKEN}@huggingface.co/spaces/oegedijk/explainingtitanic"
+          git push hf HEAD:main
