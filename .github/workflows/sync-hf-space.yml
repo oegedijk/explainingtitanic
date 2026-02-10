@@ -8,6 +8,7 @@ on:
 
 jobs:
   sync:
+    if: github.repository == 'oegedijk/explainingtitanic' && github.actor == 'oegedijk'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
