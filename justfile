@@ -35,3 +35,12 @@ fly-status:
 
 fly-scale-1gb:
   fly scale vm shared-cpu-1x --memory 1024
+
+proxy-deploy:
+  cd proxy && fly deploy -a titanicexplainer
+
+proxy-status:
+  fly status -a titanicexplainer
+
+proxy-logs:
+  fly logs -a titanicexplainer

@@ -2,6 +2,10 @@
 
 This repository keeps Heroku deployment compatibility and adds Fly.io deployment as an additive path.
 
+Production/public URL strategy:
+- Primary public URL: `https://titanicexplainer.fly.dev` (warmup proxy app, always-on small machine)
+- Backend app URL: `https://explainingtitanic.fly.dev` (dashboard app, can suspend for cost savings)
+
 ## 1) One-time setup
 
 Install tools:
@@ -61,11 +65,11 @@ Suggested answers:
 
 If app name is taken, update `app = "explainingtitanic"` in `fly.toml` to a unique name.
 
-## 4) Deploy
+## 4) Deploy backend app
 
 ```bash
 fly deploy
-fly open
+fly open -a explainingtitanic
 ```
 
 ## 5) Day-2 operations
@@ -176,6 +180,9 @@ just fly-deploy
 just fly-logs
 just fly-status
 just fly-scale-1gb
+just proxy-deploy
+just proxy-status
+just proxy-logs
 ```
 
 ## 11) Optional warmup proxy app
@@ -184,9 +191,8 @@ To serve a quick "waking up" page while the main app is suspended, deploy the `p
 
 ```bash
 cd proxy
-fly launch --no-deploy --name titanicexplainer --copy-config
-fly deploy
-fly open
+fly deploy -a titanicexplainer
+fly open -a titanicexplainer
 ```
 
 Behavior:
